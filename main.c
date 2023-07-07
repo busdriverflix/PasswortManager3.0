@@ -1,0 +1,55 @@
+#include <windows.h>
+#include <shlwapi.h>
+#include <wchar.h>
+#include "global.h"
+#include "util.h"
+#include "file.h"
+
+Settings gSettings = { 0 };
+
+// Function prototypes
+void setup(void);
+inline void load_settings(void);
+
+int WINAPI WinMain(_In_ HINSTANCE hinstance, _In_opt_ HINSTANCE hprevinstance, _In_ LPWSTR commandline, _In_ int showcmd)
+{
+	setup();
+}
+
+void setup(void)
+{
+	load_settings();
+}
+
+inline void load_settings(void)
+{
+	// Get file path of executable
+	wchar_t exepath[MAX_PATH];
+	GetModuleFileNameW(NULL, exepath, MAX_PATH);
+	PathRemoveFileSpecW(exepath);
+
+	size_t settings_path_count = wcslen(exepath) + wcslen(L"\\settings.ini") + 1;
+
+	wchar_t* settings_path = (wchar_t*)HEAP_ALLOC(settings_path_count * sizeof(wchar_t));
+
+	if (settings_path == NULL)
+		error_exit();
+
+	swprintf_s(settings_path, settings_path_count, L"%s\\settings.ini", exepath);
+
+	if (!PathFileExistsW(settings_path))
+	{
+		// If the settings file doesn't exist, create one
+		Settings default_settings =
+		{
+			.background = RGB(36, 42, 64),
+			.accent = RGB(51, 59, 90),
+			.foreground = RGB(255, 255, 255),
+			.font = L"Calibri"
+		};
+
+		messageboxf(MB_OK, L"d", default_settings.font);
+
+		write_settings_to_file(&default_settings, settings_path);
+	}
+}
