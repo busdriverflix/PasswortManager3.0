@@ -14,6 +14,8 @@ inline void load_settings(void);
 int WINAPI WinMain(_In_ HINSTANCE hinstance, _In_opt_ HINSTANCE hprevinstance, _In_ LPWSTR commandline, _In_ int showcmd)
 {
 	setup();
+
+
 }
 
 void setup(void)
@@ -50,6 +52,18 @@ inline void load_settings(void)
 
 		messageboxf(MB_OK, L"d", default_settings.font);
 
-		write_settings_to_file(&default_settings, settings_path);
+		if (write_settings_to_file(&default_settings, settings_path) == FALSE)
+			error_exit();
+
+		gSettings = default_settings;
+
+		HEAP_FREE(settings_path);
+
+		return;
 	}
+
+	if (load_settings_from_file(&gSettings, settings_path) == FALSE)
+		error_exit();
+
+	HEAP_FREE(settings_path);
 }

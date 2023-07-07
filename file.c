@@ -5,9 +5,54 @@
 #include "file.h"
 #include "util.h"
 
-void write_settings_to_file(_In_ Settings* settings, _In_ const wchar_t* settings_path)
+BOOL write_settings_to_file(_In_ Settings* settings, _In_ const wchar_t* settings_path)
 {
+	if (settings == NULL)
+		return FALSE;
+
 	FILE* fp = NULL;
 
-	_wfopen_s(&fp, settings_path, L"r");
+	if (_wfopen_s(&fp, settings_path, L"w") != 0)
+		return FALSE;
+
+	if (fp == NULL)	// Redundant
+		return FALSE;
+
+	if (fwprintf_s(fp, L"background=#%06X\naccent=#%06X\nforeground=#%06X\nfont=%s", settings->background,
+		settings->accent, settings->foreground, settings->font) > 0)
+	{
+		fclose(fp);
+		return FALSE;
+	}
+
+	fclose(fp);
+	return TRUE;
+}
+
+BOOL load_settings_from_file(_In_ Settings* settings, _In_ const wchar_t* settings_path)
+{
+	if (settings == NULL)
+		return FALSE;
+
+	Settings loaded_settings = { 0 };
+
+	FILE* fp = NULL;
+
+	if (_wfopen_s(&fp, settings_path, L"r") != 0)
+		return FALSE;
+
+	if (fp == NULL)	// Redundant
+		return FALSE;
+
+	if (fwscanf_s(fp, L"background=#%06X\naccent=#%06X\nforeground=#%06X\nfont=%s", &loaded_settings.background,
+		&loaded_settings.accent, &loaded_settings.foreground, loaded_settings.font) != NUM_SETTINGS)
+	{
+		fclose(fp);
+		return FALSE;
+	}
+
+	*settings = loaded_settings;
+
+	fclose(fp);
+	return TRUE;
 }
