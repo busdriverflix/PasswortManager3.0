@@ -4,6 +4,7 @@
 #include "global.h"
 #include "util.h"
 #include "file.h"
+#include "window.h"
 
 Settings gSettings = { 0 };
 
@@ -13,9 +14,28 @@ inline void load_settings(void);
 
 int WINAPI WinMain(_In_ HINSTANCE hinstance, _In_opt_ HINSTANCE hprevinstance, _In_ LPWSTR commandline, _In_ int showcmd)
 {
+	UNREFERENCED_PARAMETER(hprevinstance);
+	UNREFERENCED_PARAMETER(commandline);
+	UNREFERENCED_PARAMETER(showcmd);
+
 	setup();
 
+	if (window_init(hinstance) == FALSE)
+	{
+		error_exit();
+	}
 
+	MSG message = { 0 };
+
+	while (GetMessageW(&message, gMainWindow->handle, 0, 0) > 0)
+	{
+		TranslateMessage(&message);
+		DispatchMessageW(&message);
+	}
+
+	UnregisterClassW(MAIN_WINDOW_CLASSNAME, NULL);
+
+	return 0;
 }
 
 void setup(void)
@@ -49,8 +69,6 @@ inline void load_settings(void)
 			.foreground = RGB(255, 255, 255),
 			.font = L"Calibri"
 		};
-
-		messageboxf(MB_OK, L"d", default_settings.font);
 
 		if (write_settings_to_file(&default_settings, settings_path) == FALSE)
 			error_exit();

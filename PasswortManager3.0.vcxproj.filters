@@ -15,6 +15,9 @@
     <ClCompile Include="file.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="window.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="global.h">
@@ -26,6 +29,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="file.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="window.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
