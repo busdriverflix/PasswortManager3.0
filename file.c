@@ -34,8 +34,6 @@ BOOL load_settings_from_file(_In_ Settings* settings, _In_ const wchar_t* settin
 	if (settings == NULL)
 		return FALSE;
 
-	Settings loaded_settings = { 0 };
-
 	FILE* fp = NULL;
 
 	if (_wfopen_s(&fp, settings_path, L"r") != 0)
@@ -50,8 +48,6 @@ BOOL load_settings_from_file(_In_ Settings* settings, _In_ const wchar_t* settin
 		fclose(fp);
 		return FALSE;
 	}
-
-	*settings = loaded_settings;
 
 	fclose(fp);
 	return TRUE;

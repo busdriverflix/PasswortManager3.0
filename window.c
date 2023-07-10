@@ -16,14 +16,22 @@ void init_window(_In_ HINSTANCE hinstance)
 	WNDCLASSEXW wc = { 0 };
 	wc.cbSize = sizeof(WNDCLASSEXW);
 	wc.hInstance = hinstance;
+
+#ifdef _DEBUG
+	wc.hbrBackground = CreateSolidBrush(RGB(255, 0, 255));
+#else
 	wc.hbrBackground = CreateSolidBrush(gSettings->background);
+#endif
+
 	wc.hCursor = LoadCursorW(NULL, IDC_ARROW);
 	wc.lpszClassName = WNDCLASSNAME;
 	wc.lpfnWndProc = main_wnd_proc;
+	wc.lpszClassName = MAIN_WINDOW_CLASSNAME;
 
 	if (RegisterClassExW(&wc) == 0)
 		error_exit();
 
+	// Calculate size and position of the main window
 	int screen_width = GetSystemMetrics(SM_CXSCREEN);
 	int screen_height = GetSystemMetrics(SM_CYSCREEN);
 
@@ -58,11 +66,11 @@ LRESULT CALLBACK main_wnd_proc(HWND window_handle, UINT message, WPARAM wparam, 
 		{
 			gMainWindow->cur_client_rect = get_client_rect(window_handle);
 			gMainWindow->cur_window_rect = get_window_rect(window_handle);
-
+		
 			if (current_page != NULL)
 			{
 				SetWindowPos(current_page, HWND_TOPMOST, 0, 0, RECT_WIDTH(gMainWindow->cur_client_rect), RECT_HEIGHT(gMainWindow->cur_client_rect), SWP_NOACTIVATE);
-			}
+	}
 
 			break;
 		}

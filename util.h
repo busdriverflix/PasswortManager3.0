@@ -13,6 +13,7 @@
 
 // Functions
 int messageboxf(_In_ UINT type, _In_ const wchar_t* const title, _In_ const wchar_t* const _format, ...);
+void messageboxfOK(_In_ const wchar_t* const title, _In_ const wchar_t* const _format, ...);
 void error_exit(void);
 
 RECT get_window_rect(_In_ HWND window_handle);

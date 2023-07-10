@@ -3,6 +3,8 @@
 
 #include <windows.h>
 
+#define DBB() __debugbreak()
+
 typedef struct Settings
 {
 	COLORREF background, accent, foreground;
