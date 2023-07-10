@@ -11,4 +11,4 @@ typedef struct Settings
 
 #endif
 
-extern Settings gSettings;
+extern Settings* gSettings;

@@ -45,7 +45,7 @@ BOOL load_settings_from_file(_In_ Settings* settings, _In_ const wchar_t* settin
 		return FALSE;
 
 	if (fwscanf_s(fp, L"background=#%06X\naccent=#%06X\nforeground=#%06X\nfont=%s", &loaded_settings.background,
-		&loaded_settings.accent, &loaded_settings.foreground, loaded_settings.font) != NUM_SETTINGS)
+		&loaded_settings.accent, &loaded_settings.foreground, loaded_settings.font, 32) != NUM_SETTINGS)
 	{
 		fclose(fp);
 		return FALSE;

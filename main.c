@@ -4,8 +4,10 @@
 #include "global.h"
 #include "util.h"
 #include "file.h"
+#include "window.h"
 
-Settings gSettings = { 0 };
+Settings gSettings_s = { 0 };
+Settings* gSettings = &gSettings_s;
 
 // Function prototypes
 void setup(void);
@@ -15,7 +17,19 @@ int WINAPI WinMain(_In_ HINSTANCE hinstance, _In_opt_ HINSTANCE hprevinstance, _
 {
 	setup();
 
+	init_window(hinstance);
 
+	MSG message = { 0 };
+
+	while (GetMessageW(&message, gMainWindow->handle, 0, 0) > 0)
+	{
+		TranslateMessage(&message);
+		DispatchMessageW(&message);
+	}
+
+	UnregisterClassW(WNDCLASSNAME, NULL);
+
+	return 0;
 }
 
 void setup(void)
@@ -55,14 +69,14 @@ inline void load_settings(void)
 		if (write_settings_to_file(&default_settings, settings_path) == FALSE)
 			error_exit();
 
-		gSettings = default_settings;
+		*gSettings = default_settings;
 
 		HEAP_FREE(settings_path);
 
 		return;
 	}
 
-	if (load_settings_from_file(&gSettings, settings_path) == FALSE)
+	if (load_settings_from_file(gSettings, settings_path) == FALSE)
 		error_exit();
 
 	HEAP_FREE(settings_path);

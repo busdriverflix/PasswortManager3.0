@@ -33,3 +33,17 @@ void error_exit(void)
     MessageBoxW(NULL, L"Ein Fehler ist aufgetreten.", L"Fehler", MB_OK);
     exit(EXIT_FAILURE);
 }
+
+RECT get_window_rect(_In_ HWND window_handle)
+{
+    RECT wr = { 0 };
+    GetWindowRect(window_handle, &wr);
+    return wr;
+}
+
+RECT get_client_rect(_In_ HWND window_handle)
+{
+    RECT cr = { 0 };
+    GetClientRect(window_handle, &cr);
+    return cr;
+}
