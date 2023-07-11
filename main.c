@@ -72,7 +72,8 @@ inline void load_settings(void)
 			.background = RGB(36, 42, 64),
 			.accent = RGB(51, 59, 90),
 			.foreground = RGB(255, 255, 255),
-			.font = L"Calibri"
+			.font = L"Calibri",
+			.asterisk_password = TRUE
 		};
 
 		if (write_settings_to_file(&default_settings, settings_path) == FALSE)

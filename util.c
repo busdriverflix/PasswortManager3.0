@@ -57,6 +57,11 @@ void error_exit(void)
     exit(EXIT_FAILURE);
 }
 
+void error_msg(_In_ const wchar_t* const message)
+{
+    messageboxf(MB_OK | MB_ICONWARNING, L"Fehler!", message);
+}
+
 RECT get_window_rect(_In_ HWND window_handle)
 {
     RECT wr = { 0 };
@@ -69,4 +74,91 @@ RECT get_client_rect(_In_ HWND window_handle)
     RECT cr = { 0 };
     GetClientRect(window_handle, &cr);
     return cr;
+}
+
+BOOL change_ctrl_fontsize(_In_ HWND control_handle, _In_ int new_size)
+{
+    // Get the current font of the control
+    HFONT hFont = (HFONT)SendMessage(control_handle, WM_GETFONT, 0, 0);
+    if (hFont == NULL)
+    {
+        // Error retrieving the current font
+        return FALSE;
+    }
+
+    // Create a new font with the desired size
+    LOGFONT lf = { 0 };
+    if (GetObject(hFont, sizeof(LOGFONT), &lf) == 0)
+    {
+        // Error retrieving information about the current font
+        return FALSE;
+    }
+    lf.lfHeight = new_size; // Specify the desired font size
+
+    HFONT hNewFont = CreateFontIndirect(&lf);
+    if (hNewFont == NULL)
+    {
+        // Error creating the new font
+        return FALSE;
+    }
+
+    // Set the new font for the control
+    if (SendMessage(control_handle, WM_SETFONT, (WPARAM)hNewFont, TRUE) == 0)
+    {
+        // Error setting the new font for the control
+        DeleteObject(hNewFont);
+        return FALSE;
+    }
+
+    // Delete the previous font
+    if (!DeleteObject(hFont))
+    {
+        // Error deleting the previous font
+        return FALSE;
+    }
+
+    // Font size change successful
+    return TRUE;
+}
+
+BOOL change_ctrl_font(_In_ HWND control_handle, _In_ HFONT new_font)
+{
+    // Set the new font for the control
+    if (SendMessageW(control_handle, WM_SETFONT, (WPARAM)new_font, MAKELPARAM(TRUE, 0)) == 0)
+        return FALSE;
+
+    // Font change successful
+    return TRUE;
+}
+
+HFONT create_font(_In_ const wchar_t* fontname, _In_ int font_size)
+{
+    HFONT font = CreateFontW(
+        font_size,                        // nHeight
+        0,                               // nWidth
+        0,                               // nEscapement
+        0,                               // nOrientation
+        FW_NORMAL,                       // nWeight
+        FALSE,                           // bItalic
+        FALSE,                           // bUnderline
+        FALSE,                           // cStrikeOut
+        ANSI_CHARSET,                    // nCharSet
+        OUT_DEFAULT_PRECIS,              // nOutPrecision
+        CLIP_DEFAULT_PRECIS,             // nClipPrecision
+        DEFAULT_QUALITY,                 // nQuality
+        DEFAULT_PITCH | FF_DONTCARE,     // nPitchAndFamily
+        fontname                         // lpszFaceName
+    );
+
+    return font;
+}
+
+HFONT get_font_from_ctrl(_In_ HWND ctrl_handle)
+{
+    return (HFONT)SendMessageW(ctrl_handle, WM_GETFONT, 0, 0);
+}
+
+void redraw_window(_In_ HWND window_handle)
+{
+    RedrawWindow(window_handle, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 }

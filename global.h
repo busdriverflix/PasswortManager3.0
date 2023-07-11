@@ -9,6 +9,9 @@ typedef struct Settings
 {
 	COLORREF background, accent, foreground;
 	wchar_t font[32];
+
+	BOOL asterisk_password;
+
 } Settings;
 
 #endif

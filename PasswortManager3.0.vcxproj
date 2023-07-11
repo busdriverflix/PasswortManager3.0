@@ -141,10 +141,12 @@
   <ItemGroup>
     <ClCompile Include="file.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="reset_ctrl_theme.c" />
     <ClCompile Include="util.c" />
     <ClCompile Include="window.c" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bool1.bin" />
     <None Include="global.h" />
   </ItemGroup>
   <ItemGroup>

@@ -20,7 +20,7 @@
 #endif
 
 #define WNDCLASSNAME L"PasswortManagerWndClass"
-#define WINDOW_STYLE (WS_VISIBLE | WS_OVERLAPPEDWINDOW)
+#define WINDOW_STYLE (WS_VISIBLE | WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME & ~WS_MAXIMIZEBOX)
 
 #define WM_INITIALIZED (WM_USER + 1)
 
@@ -31,8 +31,32 @@ typedef struct Window
 	RECT cur_window_rect;
 } Window;
 
+// UI controls
+typedef enum UICtrlType
+{
+	UICT_NONE,
+	UICT_LABEL,
+	UICT_TEXTBOX,
+	UICT_BUTTON,
+	UICT_CHECKBOX
+
+} UICtrlType;
+
+typedef struct UIControl
+{
+	HWND handle;
+	UICtrlType type;
+	unsigned int cmd_id;
+
+	// Normalized size and position
+	float x, y, width, height;
+
+} UIControl;
+
 void init_window(_In_ HINSTANCE hinstance);
 void load_page(_In_ int id);
+
+UICtrlType get_type_from_hwnd(_In_ HWND ui_handle);
 
 #endif // WINDOW_H
 
