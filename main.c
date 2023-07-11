@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <commctrl.h>
 #include <shlwapi.h>
 #include <wchar.h>
 #include "global.h"
@@ -39,6 +40,12 @@ int WINAPI WinMain(_In_ HINSTANCE hinstance, _In_opt_ HINSTANCE hprevinstance, _
 void setup(void)
 {
 	load_settings();
+
+	// Init common controls
+	INITCOMMONCONTROLSEX icex = { 0 };
+	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+	icex.dwICC = ICC_STANDARD_CLASSES | ICC_BAR_CLASSES | ICC_COOL_CLASSES;
+	InitCommonControlsEx(&icex);
 }
 
 inline void load_settings(void)

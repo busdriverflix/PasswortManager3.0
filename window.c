@@ -26,7 +26,7 @@ void init_window(_In_ HINSTANCE hinstance)
 	wc.hCursor = LoadCursorW(NULL, IDC_ARROW);
 	wc.lpszClassName = WNDCLASSNAME;
 	wc.lpfnWndProc = main_wnd_proc;
-	wc.lpszClassName = MAIN_WINDOW_CLASSNAME;
+	wc.lpszClassName = WNDCLASSNAME;
 
 	if (RegisterClassExW(&wc) == 0)
 		error_exit();
@@ -69,8 +69,15 @@ LRESULT CALLBACK main_wnd_proc(HWND window_handle, UINT message, WPARAM wparam, 
 		
 			if (current_page != NULL)
 			{
-				SetWindowPos(current_page, HWND_TOPMOST, 0, 0, RECT_WIDTH(gMainWindow->cur_client_rect), RECT_HEIGHT(gMainWindow->cur_client_rect), SWP_NOACTIVATE);
-	}
+				int parent_width = RECT_WIDTH(gMainWindow->cur_window_rect);
+				int parent_height = RECT_HEIGHT(gMainWindow->cur_window_rect);
+
+				if (SetWindowPos(current_page, NULL, 0, 0, parent_width, parent_height, SWP_NOACTIVATE) == 0)
+				{
+					DWORD error = GetLastError();
+					messageboxf(MB_OK, L"Error", L"Windows Error: %d", error);
+				}
+			}
 
 			break;
 		}
@@ -93,16 +100,14 @@ LRESULT CALLBACK page_wnd_proc(HWND page_handle, UINT message, WPARAM wparam, LP
 	{
 		case WM_INITDIALOG:
 		{
-			HBRUSH background_brush = CreateSolidBrush(RGB(255, 0, 0));
-
-			SetClassLongPtr(page_handle, GCLP_HBRBACKGROUND, (LONG_PTR)background_brush);
-
-			DeleteObject(background_brush);
-
 			// Position the page
-			SetWindowPos(page_handle, HWND_TOPMOST, 0, 0, RECT_WIDTH(gMainWindow->cur_client_rect), RECT_HEIGHT(gMainWindow->cur_client_rect), SWP_NOACTIVATE);
+			SetWindowPos(page_handle, NULL, 0, 0, RECT_WIDTH(gMainWindow->cur_client_rect), RECT_HEIGHT(gMainWindow->cur_client_rect), SWP_NOACTIVATE);
 
 			break;
+		}
+		case WM_CTLCOLORDLG:
+		{
+			return (INT_PTR)CreateSolidBrush(gSettings->background);
 		}
 	}
 
