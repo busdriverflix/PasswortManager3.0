@@ -157,14 +157,14 @@ static inline void page_on_resize(_In_ HWND page_handle, _In_ LPARAM lparam)
 
 		SetWindowPos(cur_ctrl->handle, NULL, ui_x, ui_y, ui_width, ui_height, SWP_NOZORDER | SWP_NOACTIVATE);
 
-		/*switch (cur_ctrl->type)
+		switch (cur_ctrl->type)
 		{
-			case UICT_BUTTON:
+			/*case UICT_BUTTON:
 			{
 				change_ctrl_fontsize(cur_ctrl->handle, (int)(((float)ui_height / 3.0f) * 2.0f));
 				break;
-			}
-		}*/
+			}*/
+		}
 	}
 }
 
@@ -276,18 +276,34 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 			break;
 		}
 		case UICT_TEXTBOX:
-		case UICT_LABEL:
 		{
+			//if (gSettings->asterisk_password)
+			//{
+			//	DWORD style = GetWindowLongPtr(ui_handle, GWL_STYLE);
+			//	style |= ES_PASSWORD;
+			//	SetWindowLongPtr(ui_handle, GWL_STYLE, style);
+
+			//	/*if (GetWindowLongPtr(ui_handle, GWL_STYLE) & ES_PASSWORD)
+			//	{
+			//		__debugbreak();
+			//	}*/
+
+			//	redraw_window(ui_handle);
+			//}
+
 			if (ctrl->cmd_id == IDC_EDIT1)
 				SetFocus(ui_handle);
-
+		}
+		case UICT_LABEL:
+		{
 			size = (int)(((float)ui_height / 3.0f) * 2.5f);
 			break;
 		}
 		case UICT_CHECKBOX:
 		{
 			change_window_theme(ui_handle);
-			(int)(((float)ui_height / 3.0f) * 2.5f);
+			//size = (int)(((float)ui_height / 3.0f) * 2.9f);
+			size = ui_height;
 			break;
 		}
 		default:
