@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ctrl_command.c" />
     <ClCompile Include="file.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="reset_ctrl_theme.c" />
@@ -150,6 +151,7 @@
     <None Include="global.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ctrl_command.h" />
     <ClInclude Include="file.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="util.h" />

@@ -162,3 +162,9 @@ void redraw_window(_In_ HWND window_handle)
 {
     RedrawWindow(window_handle, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 }
+
+void force_redraw_window(_In_ HWND window_handle)
+{
+    ShowWindow(window_handle, SW_HIDE);
+    ShowWindow(window_handle, SW_SHOW);
+}

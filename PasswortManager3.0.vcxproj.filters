@@ -18,11 +18,16 @@
     <ClCompile Include="window.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="reset_ctrl_theme.c" />
+    <ClCompile Include="ctrl_command.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="global.h">
       <Filter>src</Filter>
     </None>
+    <None Include="bool1.bin" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="util.h">
@@ -35,6 +40,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="ctrl_command.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />

@@ -14,6 +14,12 @@
 
 #define WSTR_EQUALS(str1, str2) (wcscmp(str1, str2) == 0)
 
+#define get_window_style(window_handle) (GetWindowLongPtr(window_handle, GWL_STYLE))
+#define get_class_style(window_handle) (GetClassLongPtr(window_handle, GCL_STYLE))
+
+#define set_window_style(window_handle, new_style) (SetWindowLongPtr(window_handle, GWL_STYLE, new_style))
+#define set_class_style(window_handle, new_style) (SetClassLongPtr(window_handle, GCL_STYLE, new_style))
+
 // Functions
 int messageboxf(_In_ UINT type, _In_ const wchar_t* const title, _In_ const wchar_t* const _format, ...);
 void messageboxfOK(_In_ const wchar_t* const title, _In_ const wchar_t* const _format, ...);
@@ -29,5 +35,6 @@ HFONT create_font(_In_ const wchar_t* fontname, _In_ int font_size);
 HFONT get_font_from_ctrl(_In_ HWND ctrl_handle);
 
 void redraw_window(_In_ HWND window_handle);
+void force_redraw_window(_In_ HWND window_handle);
 
 #endif

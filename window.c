@@ -1,6 +1,7 @@
-#include <stdint.h>
+﻿#include <stdint.h>
 
 #include "window.h"
+#include "ctrl_command.h"
 #include "global.h"
 #include "util.h"
 #include "resource.h"
@@ -168,6 +169,21 @@ static inline void page_on_resize(_In_ HWND page_handle, _In_ LPARAM lparam)
 	}
 }
 
+static inline void page_on_command(_In_ HWND page_handle, _In_ WPARAM wparam, _In_ LPARAM lparam)
+{
+	int ctrl_id = LOWORD(wparam);
+	int event = HIWORD(wparam);
+	HWND ctrl_handle = (HWND)lparam;
+
+	if (event == BN_CLICKED)
+	{
+		if (ctrl_id == IDC_CHECK1)
+		{
+			show_password_checkbox_click(ctrl_handle, page_handle);
+		}
+	}
+}
+
 LRESULT CALLBACK page_wnd_proc(HWND page_handle, UINT message, WPARAM wparam, LPARAM lparam)
 {
 	switch (message)
@@ -229,6 +245,11 @@ LRESULT CALLBACK page_wnd_proc(HWND page_handle, UINT message, WPARAM wparam, LP
 			// Return a handle to the background brush
 			return (LRESULT)GetStockObject(NULL_BRUSH);
 		}
+		case WM_COMMAND:
+		{
+			page_on_command(page_handle, wparam, lparam);
+			break;
+		}
 	}
 
 	return DefWindowProcW(page_handle, message, wparam, lparam);
@@ -277,19 +298,10 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 		}
 		case UICT_TEXTBOX:
 		{
-			//if (gSettings->asterisk_password)
-			//{
-			//	DWORD style = GetWindowLongPtr(ui_handle, GWL_STYLE);
-			//	style |= ES_PASSWORD;
-			//	SetWindowLongPtr(ui_handle, GWL_STYLE, style);
-
-			//	/*if (GetWindowLongPtr(ui_handle, GWL_STYLE) & ES_PASSWORD)
-			//	{
-			//		__debugbreak();
-			//	}*/
-
-			//	redraw_window(ui_handle);
-			//}
+			if (gSettings->asterisk_password)
+			{
+				SendMessage(ui_handle, EM_SETPASSWORDCHAR, L'•', 0);
+			}
 
 			if (ctrl->cmd_id == IDC_EDIT1)
 				SetFocus(ui_handle);
@@ -302,6 +314,12 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 		case UICT_CHECKBOX:
 		{
 			change_window_theme(ui_handle);
+
+			if (gSettings->asterisk_password)
+			{
+				SendMessage(ui_handle, BM_SETCHECK, BST_CHECKED, 0);
+			}
+
 			//size = (int)(((float)ui_height / 3.0f) * 2.9f);
 			size = ui_height;
 			break;
@@ -318,7 +336,7 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 
 	if (change_ctrl_font(ctrl->handle, font) == FALSE)
 	{
-		int byebye = 0;
+		// TODO: Handle error
 	}
 
 	// Add to the current page's controls array
@@ -329,7 +347,7 @@ UICtrlType get_type_from_hwnd(_In_ HWND ui_handle)
 {
 	if (ui_handle == NULL)
 	{
-		error_msg(L"Fehler: Ung�ltiger UI-Handle!");
+		error_msg(L"Fehler: Ungültiger UI-Handle!");
 		return UICT_NONE;
 	}
 
