@@ -22,9 +22,9 @@
 #define WNDCLASSNAME L"PasswortManagerWndClass"
 #define WINDOW_STYLE (WS_VISIBLE | WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME & ~WS_MAXIMIZEBOX)
 
-#define EDITBOX_WS (WS_CHILD | WS_VISIBLE | WS_TABSTOP | ES_LEFT)
-
 #define WM_INITIALIZED (WM_USER + 1)
+
+#define MAX_PASSWORD_COUNT 32
 
 typedef struct Window
 {
@@ -57,6 +57,7 @@ typedef struct UIControl
 
 void init_window(_In_ HINSTANCE hinstance);
 void load_page(_In_ int id);
+void unload_current_page(void);
 
 UICtrlType get_type_from_hwnd(_In_ HWND ui_handle);
 

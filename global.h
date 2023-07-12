@@ -17,3 +17,4 @@ typedef struct Settings
 #endif
 
 extern Settings* gSettings;
+extern wchar_t master_password[];

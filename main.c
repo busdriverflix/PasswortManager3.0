@@ -10,6 +10,8 @@
 Settings gSettings_s = { 0 };
 Settings* gSettings = &gSettings_s;
 
+wchar_t master_password[32] = { 0 };
+
 // Function prototypes
 void setup(void);
 inline void load_settings(void);

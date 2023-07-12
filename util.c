@@ -168,3 +168,26 @@ void force_redraw_window(_In_ HWND window_handle)
     ShowWindow(window_handle, SW_HIDE);
     ShowWindow(window_handle, SW_SHOW);
 }
+
+// Color
+COLORREF adjust_brightness(_In_ COLORREF color, _In_ int amount, _In_ BOOL increase)
+{
+    int red = GetRValue(color);
+    int green = GetGValue(color);
+    int blue = GetBValue(color);
+
+    if (increase)
+    {
+        red = min(255, red + amount);
+        green = min(255, green + amount);
+        blue = min(255, blue + amount);
+    }
+    else
+    {
+        red = max(0, red - amount);
+        green = max(0, green - amount);
+        blue = max(0, blue - amount);
+    }
+
+    return RGB(red, green, blue);
+}

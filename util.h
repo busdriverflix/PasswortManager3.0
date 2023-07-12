@@ -37,4 +37,8 @@ HFONT get_font_from_ctrl(_In_ HWND ctrl_handle);
 void redraw_window(_In_ HWND window_handle);
 void force_redraw_window(_In_ HWND window_handle);
 
+// Color
+COLORREF adjust_brightness(_In_ COLORREF color, _In_ int amount, _In_ BOOL increase);
+#define INVERT_COLOR(color) ((~color) & 0xFFFFFFFF)
+
 #endif
