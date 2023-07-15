@@ -26,6 +26,25 @@
 
 #define MAX_PASSWORD_COUNT 32
 
+// Trackbar defines (Slider control)
+#define TBM_GETPOS				1024
+#define TBM_GETRANGEMIN			1026
+#define TBM_GETRANGEMAX			1027
+#define TBM_SETPOS				1029
+#define TBM_SETRANGE			1030
+#define TBM_SETRANGEMIN			1031
+#define TBM_SETRANGEMAX			1032
+#define TBM_SETTICFREQ			1033
+#define TBM_SETSEL				1034
+#define TBM_SETSELSTART			1035
+#define TBM_SETSELEND			1036
+#define TBM_CLEARSEL			1040
+#define TBM_SETTOOLTIPS			1041
+#define TBM_SETTIPSIDE			1042
+#define TBM_SETBUDDY			1043
+#define TBM_GETBUDDY			1044
+#define TBM_SETUNICODEFORMAT	1091
+
 typedef struct Window
 {
 	HWND handle;
@@ -40,7 +59,9 @@ typedef enum UICtrlType
 	UICT_LABEL,
 	UICT_TEXTBOX,
 	UICT_BUTTON,
-	UICT_CHECKBOX
+	UICT_CHECKBOX,
+	UICT_GROUPBOX,
+	UICT_SLIDER
 
 } UICtrlType;
 

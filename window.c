@@ -14,6 +14,7 @@ static struct CurrentProgramPage
 	HWND handle;
 	int num_controls;
 	UIControl** controls;
+	unsigned int id;
 
 } cur_program_page = { 0 };
 
@@ -22,7 +23,7 @@ LRESULT CALLBACK page_wnd_proc(HWND page_handle, UINT message, WPARAM wparam, LP
 BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam);
 LRESULT CALLBACK textbox_wnd_proc(HWND window_handle, UINT message, WPARAM wparam, LPARAM lparam);
 
-extern void change_window_theme(_In_ HWND handle);
+extern void reset_window_theme(_In_ HWND handle);
 
 void init_window(_In_ HINSTANCE hinstance)
 {
@@ -122,6 +123,8 @@ LRESULT CALLBACK main_wnd_proc(HWND window_handle, UINT message, WPARAM wparam, 
 
 void load_page(_In_ int id)
 {
+	cur_program_page.id = id;
+
 	cur_program_page.handle = CreateDialogW(NULL, MAKEINTRESOURCE(id), gMainWindow->handle, page_wnd_proc);
 
 	if (cur_program_page.handle == NULL)
@@ -188,23 +191,19 @@ static inline void page_on_resize(_In_ HWND page_handle, _In_ LPARAM lparam)
 static inline void page_on_command(_In_ HWND page_handle, _In_ WPARAM wparam, _In_ LPARAM lparam)
 {
 	int ctrl_id = LOWORD(wparam);
-	int event = HIWORD(wparam);
 	HWND ctrl_handle = (HWND)lparam;
 
-	if (event == BN_CLICKED)
+	if (ctrl_id == IDC_CHECK1)
 	{
-		if (ctrl_id == IDC_CHECK1)
-		{
-			show_password_checkbox_click(ctrl_handle, page_handle);
-		}
-		else if (ctrl_id == IDC_BUTTON1)
-		{
-			login_button_click(ctrl_handle, page_handle);
-		}
+		show_password_checkbox_click(ctrl_handle, page_handle);
 	}
-	else if (event == EN_CHANGE)
+	else if (ctrl_id == IDC_BUTTON1)
 	{
-		//__debugbreak();
+		login_button_click(ctrl_handle, page_handle);
+	}
+	else if (ctrl_id == IDC_BUTTON_NEW)
+	{
+		new_button_click(ctrl_handle, page_handle);
 	}
 }
 
@@ -347,6 +346,56 @@ ERR_CLEANUP_EXIT:
 	DeleteObject(font);
 }
 
+static inline void page_draw_label(_In_ LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	HBRUSH background_brush = CreateSolidBrush(gSettings->accent);
+	HBRUSH border_brush = CreateSolidBrush(adjust_brightness(gSettings->accent, 15, TRUE));
+
+	// Border
+	FillRect(lpDrawItemStruct->hDC, &lpDrawItemStruct->rcItem, border_brush);
+
+	RECT inside_rect = adjust_rect(&lpDrawItemStruct->rcItem, 3, TRUE);
+
+	// Background
+	FillRect(lpDrawItemStruct->hDC, &inside_rect, background_brush);
+
+	DeleteObject(background_brush);
+	DeleteObject(border_brush);
+
+	// Text
+	int label_height = lpDrawItemStruct->rcItem.bottom - lpDrawItemStruct->rcItem.top;
+	int text_size = label_height - (int)((float)label_height * 0.2f);
+	wchar_t text[64] = { 0 };
+	GetWindowTextW(lpDrawItemStruct->hwndItem, text, 64);
+
+	HFONT font = CreateFontW(
+		text_size,                        // nHeight
+		0,                               // nWidth
+		0,                               // nEscapement
+		0,                               // nOrientation
+		FW_NORMAL,                       // nWeight
+		FALSE,                           // bItalic
+		FALSE,                           // bUnderline
+		FALSE,                           // cStrikeOut
+		ANSI_CHARSET,                    // nCharSet
+		OUT_DEFAULT_PRECIS,              // nOutPrecision
+		CLIP_DEFAULT_PRECIS,             // nClipPrecision
+		DEFAULT_QUALITY,                 // nQuality
+		DEFAULT_PITCH | FF_DONTCARE,     // nPitchAndFamily
+		gSettings->font                  // lpszFaceName
+	);
+
+	HFONT hOldFont = SelectObject(lpDrawItemStruct->hDC, font);
+
+	SetTextColor(lpDrawItemStruct->hDC, gSettings->foreground);
+	SetBkMode(lpDrawItemStruct->hDC, TRANSPARENT);
+
+	DrawTextW(lpDrawItemStruct->hDC, text, -1, &lpDrawItemStruct->rcItem, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+	SelectObject(lpDrawItemStruct->hDC, hOldFont);
+	DeleteObject(font);
+}
+
 static inline void page_draw_items(_In_ HWND page_handle, _In_ LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
 	UICtrlType type = get_type_from_hwnd(lpDrawItemStruct->hwndItem);
@@ -358,23 +407,44 @@ static inline void page_draw_items(_In_ HWND page_handle, _In_ LPDRAWITEMSTRUCT 
 			page_draw_button(lpDrawItemStruct);
 			break;
 		}
+		case UICT_LABEL:
+		{
+			page_draw_label(lpDrawItemStruct);
+			break;
+		}
 	}
 }
 
 LRESULT CALLBACK page_wnd_proc(HWND page_handle, UINT message, WPARAM wparam, LPARAM lparam)
 {
+	static HBRUSH checkbox_background = NULL;
+	static HBRUSH listbox_background = NULL;
+
 	switch (message)
 	{
+		case WM_INITDIALOG:
+		{
+			// Create the background brushes
+			checkbox_background = CreateSolidBrush(gSettings->background);
+			listbox_background = CreateSolidBrush(gSettings->accent);
+
+			break;
+		}
 		case WM_INITIALIZED:
 		{
 			// Position the page
-			SetWindowPos(page_handle, NULL, 0, 0, RECT_WIDTH(gMainWindow->cur_client_rect), RECT_HEIGHT(gMainWindow->cur_client_rect), SWP_NOACTIVATE);
+			SetWindowPos(page_handle, NULL, 0, 0, RECT_WIDTH(gMainWindow->cur_client_rect), RECT_HEIGHT(gMainWindow->cur_client_rect), 0);
+
+			for (int i = 0; i < cur_program_page.num_controls; i++)
+			{
+				force_redraw_window(cur_program_page.controls[i]->handle);
+			}
 
 			break;
 		}
 		case WM_CTLCOLORDLG:
 		{
-			return (INT_PTR)CreateSolidBrush(gSettings->background);
+			return (LRESULT)checkbox_background;
 		}
 		case WM_SIZE:
 		{
@@ -389,12 +459,31 @@ LRESULT CALLBACK page_wnd_proc(HWND page_handle, UINT message, WPARAM wparam, LP
 			HDC hdcStatic = (HDC)wparam;
 			HWND hWndStatic = (HWND)lparam;
 
-			if (get_type_from_hwnd(hWndStatic) == UICT_CHECKBOX)
+			unsigned int id = GetDlgCtrlID(hWndStatic);
+
+			UICtrlType type = get_type_from_hwnd(hWndStatic);
+
+			if (type == UICT_CHECKBOX)
 			{
 				SetBkMode(hdcStatic, TRANSPARENT);
 				SetTextColor(hdcStatic, gSettings->foreground);
 
-				return (LRESULT)CreateSolidBrush(gSettings->background);
+				return (LRESULT)checkbox_background;
+			}
+			else if (type == UICT_SLIDER)
+			{
+				SetBkMode(hdcStatic, TRANSPARENT);
+				
+				return (LRESULT)checkbox_background;
+			}
+			else if (id == IDC_GROUPBOX)
+			{
+				SetBkMode(hdcStatic, TRANSPARENT);
+				SetTextColor(hdcStatic, gSettings->foreground);  // Red font color
+
+				// Return a handle to the background brush
+				return (LRESULT)checkbox_background;
+
 			}
 
 			// Set the desired background color
@@ -422,9 +511,18 @@ LRESULT CALLBACK page_wnd_proc(HWND page_handle, UINT message, WPARAM wparam, LP
 			// Return a handle to the background brush
 			return (LRESULT)GetStockObject(NULL_BRUSH);
 		}
+		case WM_CTLCOLORLISTBOX:
+		{
+			return listbox_background;
+		}
 		case WM_COMMAND:
 		{
 			page_on_command(page_handle, wparam, lparam);
+			break;
+		}
+		case WM_HSCROLL:
+		{
+			length_slider_on_change((HWND)lparam, page_handle);
 			break;
 		}
 		case WM_CLOSE:
@@ -435,6 +533,16 @@ LRESULT CALLBACK page_wnd_proc(HWND page_handle, UINT message, WPARAM wparam, LP
 		case WM_DRAWITEM:
 		{
 			page_draw_items(page_handle, (LPDRAWITEMSTRUCT)lparam);
+			break;
+		}
+		case WM_DESTROY:
+		{
+			DeleteObject(checkbox_background);
+			DeleteObject(listbox_background);
+
+			checkbox_background = NULL;
+			listbox_background = NULL;
+
 			break;
 		}
 	}
@@ -510,30 +618,41 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 		}
 		case UICT_TEXTBOX:
 		{
-			if (gSettings->asterisk_password)
-			{
-				SendMessage(ui_handle, EM_SETPASSWORDCHAR, L'•', 0);
-			}
+			SendMessage(ui_handle, EM_LIMITTEXT, MAX_PASSWORD_COUNT, 0);
 
 			if (ctrl->cmd_id == IDC_EDIT1)
 			{
 				// If this is the first password textbox for the master password, subclass it to handle enter key
 				old_textbox_wnd_proc = (WNDPROC)SetWindowLongPtr(ui_handle, GWLP_WNDPROC, (LONG_PTR)textbox_wnd_proc);
+
+				SetFocus(ui_handle);
+
+				if (gSettings->asterisk_password)
+				{
+					SendMessage(ui_handle, EM_SETPASSWORDCHAR, L'•', 0);
+				}
 			}
 
-			SendMessage(ui_handle, EM_LIMITTEXT, MAX_PASSWORD_COUNT, 0);
-
-			if (ctrl->cmd_id == IDC_EDIT1)
-				SetFocus(ui_handle);
+			break;
 		}
 		case UICT_LABEL:
 		{
+			if (cur_program_page.id == IDD_PAGE_3)
+			{
+				if (ctrl->cmd_id != IDC_LABEL_LENGTH && ctrl->cmd_id != IDC_LABEL_LENGTH_NUM)
+				{
+					reset_window_theme(ui_handle);
+
+					set_window_style(ui_handle, (WS_CHILD | WS_VISIBLE | SS_OWNERDRAW));
+				}
+			}
+
 			size = (int)(((float)ui_height / 3.0f) * 2.5f);
 			break;
 		}
 		case UICT_CHECKBOX:
 		{
-			change_window_theme(ui_handle);
+			reset_window_theme(ui_handle);
 
 			if (gSettings->asterisk_password)
 			{
@@ -544,6 +663,16 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 			size = ui_height;
 			break;
 		}
+		case UICT_GROUPBOX:
+		{
+			reset_window_theme(ui_handle);
+			break;
+		}
+		case UICT_SLIDER:
+		{
+			SendMessageW(ui_handle, TBM_SETRANGE, TRUE, MAKELPARAM(5, 30));
+			break;
+		}
 		default:
 		{
 			size = 16;
@@ -552,11 +681,14 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 	}
 
 	// Change the font
-	HFONT font = create_font(gSettings->font, size);
-
-	if (change_ctrl_font(ctrl->handle, font) == FALSE)
+	if (cur_program_page.id != IDD_PAGE_3)
 	{
-		// TODO: Handle error
+		HFONT font = create_font(gSettings->font, size);
+
+		if (change_ctrl_font(ctrl->handle, font) == FALSE)
+		{
+			// TODO: Handle error
+		}
 	}
 
 	// Add to the current page's controls array
@@ -584,12 +716,18 @@ UICtrlType get_type_from_hwnd(_In_ HWND ui_handle)
 
 		if (button_type == BS_CHECKBOX || button_type == BS_AUTOCHECKBOX || button_type == BS_3STATE)
 			return UICT_CHECKBOX;
+		else if (button_type == BS_GROUPBOX)
+			return UICT_GROUPBOX;
 
 		return UICT_BUTTON;
 	}
 	else if (WSTR_EQUALS(buffer, L"EDIT") || WSTR_EQUALS(buffer, L"Edit"))
 	{
 		return UICT_TEXTBOX;
+	}
+	else if (WSTR_EQUALS(buffer, L"msctls_trackbar32"))
+	{
+		return UICT_SLIDER;
 	}
 
 	return UICT_NONE;

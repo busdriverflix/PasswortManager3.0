@@ -163,10 +163,39 @@ void redraw_window(_In_ HWND window_handle)
     RedrawWindow(window_handle, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 }
 
+void invalidate_window(_In_ HWND window_handle)
+{
+    RECT wnd_rect = get_window_rect(window_handle);
+
+    InvalidateRect(window_handle, &wnd_rect, TRUE);
+}
+
 void force_redraw_window(_In_ HWND window_handle)
 {
     ShowWindow(window_handle, SW_HIDE);
     ShowWindow(window_handle, SW_SHOW);
+}
+
+RECT adjust_rect(_In_ RECT* input, _In_ int amount_in_pixels, _In_ BOOL inside)
+{
+    RECT rect = *input;
+    
+    if (inside)
+    {
+        rect.left += amount_in_pixels;
+        rect.top += amount_in_pixels;
+        rect.right -= amount_in_pixels;
+        rect.bottom -= amount_in_pixels;
+    }
+    else
+    {
+        rect.left -= amount_in_pixels;
+        rect.top -= amount_in_pixels;
+        rect.right += amount_in_pixels;
+        rect.bottom += amount_in_pixels;
+    }
+
+    return rect;
 }
 
 // Color

@@ -35,7 +35,10 @@ HFONT create_font(_In_ const wchar_t* fontname, _In_ int font_size);
 HFONT get_font_from_ctrl(_In_ HWND ctrl_handle);
 
 void redraw_window(_In_ HWND window_handle);
+void invalidate_window(_In_ HWND window_handle);
 void force_redraw_window(_In_ HWND window_handle);
+
+RECT adjust_rect(_In_ RECT* input, _In_ int amount_in_pixels, _In_ BOOL inside);
 
 // Color
 COLORREF adjust_brightness(_In_ COLORREF color, _In_ int amount, _In_ BOOL increase);
