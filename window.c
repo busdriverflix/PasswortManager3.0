@@ -195,25 +195,25 @@ static inline void page_on_command(_In_ HWND page_handle, _In_ WPARAM wparam, _I
 	int ctrl_id = LOWORD(wparam);
 	HWND ctrl_handle = (HWND)lparam;
 
-	if (ctrl_id == IDC_CHECK1)
+	switch (ctrl_id)
 	{
-		show_password_checkbox_click(ctrl_handle, page_handle);
-	}
-	else if (ctrl_id == IDC_BUTTON1)
-	{
-		login_button_click(ctrl_handle, page_handle);
-	}
-	else if (ctrl_id == IDC_BUTTON_NEW)
-	{
-		new_button_click(ctrl_handle, page_handle);
-	}
-	else if (ctrl_id == IDC_NEW_PASSWORD_VISIBILITY)
-	{
-		show_password_checkbox_new_click(ctrl_handle, page_handle);
-	}
-	else if (ctrl_id == IDC_SAVE_PASSWORD)
-	{
-		save_button_click(ctrl_handle, page_handle);
+		case IDC_CHECK1:
+			show_password_checkbox_click(ctrl_handle, page_handle);
+			break;
+		case IDC_BUTTON1:
+			login_button_click(ctrl_handle, page_handle);
+			break;
+		case IDC_BUTTON_NEW:
+			new_button_click(ctrl_handle, page_handle);
+			break;
+		case IDC_NEW_PASSWORD_VISIBILITY:
+			show_password_checkbox_new_click(ctrl_handle, page_handle);
+			break;
+		case IDC_SAVE_PASSWORD:
+			save_button_click(ctrl_handle, page_handle);
+			break;
+		case IDC_ABORT:
+			abort_button_click(ctrl_handle, page_handle);
 	}
 }
 
