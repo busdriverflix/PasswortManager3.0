@@ -20,6 +20,8 @@
 #define set_window_style(window_handle, new_style) (SetWindowLongPtr(window_handle, GWL_STYLE, new_style))
 #define set_class_style(window_handle, new_style) (SetClassLongPtr(window_handle, GCL_STYLE, new_style))
 
+#define set_checkbox(checkbox_handle, checked) (SendMessageW(checkbox_handle, BM_SETCHECK, checked, 0))
+
 // Functions
 int messageboxf(_In_ UINT type, _In_ const wchar_t* const title, _In_ const wchar_t* const _format, ...);
 void messageboxfOK(_In_ const wchar_t* const title, _In_ const wchar_t* const _format, ...);

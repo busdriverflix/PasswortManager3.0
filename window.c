@@ -1,4 +1,6 @@
 ﻿#include <stdint.h>
+#include <windows.h>
+#include <CommCtrl.h>
 
 #include "window.h"
 #include "ctrl_command.h"
@@ -21,7 +23,7 @@ static struct CurrentProgramPage
 LRESULT CALLBACK main_wnd_proc(HWND window_handle, UINT message, WPARAM wparam, LPARAM lparam);
 LRESULT CALLBACK page_wnd_proc(HWND page_handle, UINT message, WPARAM wparam, LPARAM lparam);
 BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam);
-LRESULT CALLBACK textbox_wnd_proc(HWND window_handle, UINT message, WPARAM wparam, LPARAM lparam);
+LRESULT CALLBACK textbox_wnd_proc(HWND window_handle, UINT message, WPARAM wparam, LPARAM lparam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
 extern void reset_window_theme(_In_ HWND handle);
 
@@ -205,6 +207,14 @@ static inline void page_on_command(_In_ HWND page_handle, _In_ WPARAM wparam, _I
 	{
 		new_button_click(ctrl_handle, page_handle);
 	}
+	else if (ctrl_id == IDC_NEW_PASSWORD_VISIBILITY)
+	{
+		show_password_checkbox_new_click(ctrl_handle, page_handle);
+	}
+	else if (ctrl_id == IDC_SAVE_PASSWORD)
+	{
+		save_button_click(ctrl_handle, page_handle);
+	}
 }
 
 static inline void page_draw_button(_In_ LPDRAWITEMSTRUCT lpDrawItemStruct)
@@ -250,22 +260,7 @@ static inline void page_draw_button(_In_ LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 	int fontsize = (button_height / 2);
 
-	HFONT font = CreateFontW(
-		fontsize,                        // nHeight
-		0,                               // nWidth
-		0,                               // nEscapement
-		0,                               // nOrientation
-		FW_NORMAL,                       // nWeight
-		FALSE,                           // bItalic
-		FALSE,                           // bUnderline
-		FALSE,                           // cStrikeOut
-		ANSI_CHARSET,                    // nCharSet
-		OUT_DEFAULT_PRECIS,              // nOutPrecision
-		CLIP_DEFAULT_PRECIS,             // nClipPrecision
-		DEFAULT_QUALITY,                 // nQuality
-		DEFAULT_PITCH | FF_DONTCARE,     // nPitchAndFamily
-		gSettings->font                  // lpszFaceName
-	);
+	HFONT font = create_font(gFont, fontsize);
 
 	if (font == NULL)
 	{
@@ -382,7 +377,7 @@ static inline void page_draw_label(_In_ LPDRAWITEMSTRUCT lpDrawItemStruct)
 		CLIP_DEFAULT_PRECIS,             // nClipPrecision
 		DEFAULT_QUALITY,                 // nQuality
 		DEFAULT_PITCH | FF_DONTCARE,     // nPitchAndFamily
-		gSettings->font                  // lpszFaceName
+		gFont							 // lpszFaceName
 	);
 
 	HFONT hOldFont = SelectObject(lpDrawItemStruct->hDC, font);
@@ -394,6 +389,44 @@ static inline void page_draw_label(_In_ LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 	SelectObject(lpDrawItemStruct->hDC, hOldFont);
 	DeleteObject(font);
+}
+
+static inline void page_draw_caption(_In_ LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	// Background
+	HBRUSH background_brush = CreateSolidBrush(gSettings->background);
+	FillRect(lpDrawItemStruct->hDC, &lpDrawItemStruct->rcItem, background_brush);
+	DeleteObject(background_brush);
+
+	// Text
+	int label_height = lpDrawItemStruct->rcItem.bottom - lpDrawItemStruct->rcItem.top;
+	int text_size = label_height - (int)((float)label_height * 0.2f);
+
+	HFONT font = create_font(gFont, text_size);
+	wchar_t text[64] = { 0 };
+	GetWindowTextW(lpDrawItemStruct->hwndItem, text, 64);
+
+	HFONT hOldFont = SelectObject(lpDrawItemStruct->hDC, font);
+
+	SetTextColor(lpDrawItemStruct->hDC, gSettings->foreground);
+	SetBkMode(lpDrawItemStruct->hDC, TRANSPARENT);
+
+	DrawTextW(lpDrawItemStruct->hDC, text, -1, &lpDrawItemStruct->rcItem, DT_VCENTER | DT_LEFT | DT_SINGLELINE);
+
+	// Calculate the position of the underline
+	int underlineY = lpDrawItemStruct->rcItem.bottom - 1;
+
+	// Draw the underline manually
+	HPEN hUnderlinePen = CreatePen(PS_SOLID, 1, gSettings->foreground);  // Blue underline color
+	HPEN hOldPen = SelectObject(lpDrawItemStruct->hDC, hUnderlinePen);
+
+	MoveToEx(lpDrawItemStruct->hDC, lpDrawItemStruct->rcItem.left, underlineY, NULL);
+	LineTo(lpDrawItemStruct->hDC, lpDrawItemStruct->rcItem.right, underlineY);
+
+	SelectObject(lpDrawItemStruct->hDC, hOldPen);
+	SelectObject(lpDrawItemStruct->hDC, hOldFont);
+	DeleteObject(font);
+	DeleteObject(hUnderlinePen);
 }
 
 static inline void page_draw_items(_In_ HWND page_handle, _In_ LPDRAWITEMSTRUCT lpDrawItemStruct)
@@ -409,7 +442,11 @@ static inline void page_draw_items(_In_ HWND page_handle, _In_ LPDRAWITEMSTRUCT 
 		}
 		case UICT_LABEL:
 		{
-			page_draw_label(lpDrawItemStruct);
+			if (lpDrawItemStruct->CtlID == IDC_NEW_CAPTION)
+				page_draw_caption(lpDrawItemStruct);
+			else
+				page_draw_label(lpDrawItemStruct);
+
 			break;
 		}
 	}
@@ -438,6 +475,13 @@ LRESULT CALLBACK page_wnd_proc(HWND page_handle, UINT message, WPARAM wparam, LP
 			for (int i = 0; i < cur_program_page.num_controls; i++)
 			{
 				force_redraw_window(cur_program_page.controls[i]->handle);
+			}
+
+			if (cur_program_page.id == IDD_PAGE_3)
+			{
+				HWND name_textbox = GetDlgItem(page_handle, IDC_TEXTBOX_NAME);
+
+				SetFocus(name_textbox);
 			}
 
 			break;
@@ -520,6 +564,23 @@ LRESULT CALLBACK page_wnd_proc(HWND page_handle, UINT message, WPARAM wparam, LP
 			page_on_command(page_handle, wparam, lparam);
 			break;
 		}
+		case WM_KEYDOWN:
+		{
+			if (cur_program_page.id == IDD_PAGE_3)
+			{
+				if (wparam == VK_ESCAPE)
+				{
+					abort_button_click(NULL, cur_program_page.handle);
+				}
+
+				if (wparam == VK_RETURN)
+				{
+					save_button_click(NULL, cur_program_page.handle);
+				}
+			}
+
+			break;
+		}
 		case WM_HSCROLL:
 		{
 			length_slider_on_change((HWND)lparam, page_handle);
@@ -550,25 +611,52 @@ LRESULT CALLBACK page_wnd_proc(HWND page_handle, UINT message, WPARAM wparam, LP
 	return DefWindowProcW(page_handle, message, wparam, lparam);
 }
 
-WNDPROC old_textbox_wnd_proc = NULL;
+//WNDPROC old_textbox_wnd_proc = NULL;
 
-LRESULT CALLBACK textbox_wnd_proc(HWND window_handle, UINT message, WPARAM wparam, LPARAM lparam)
+LRESULT CALLBACK textbox_wnd_proc(HWND window_handle, UINT message, WPARAM wparam, LPARAM lparam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
 	switch (message)
 	{
 		case WM_CHAR:
 		{
+			int ctrl_id = GetDlgCtrlID(window_handle);
+
 			if (wparam == VK_RETURN)
 			{
 				// Enter Key pressed
-				login_button_click(NULL, cur_program_page.handle);
+
+				if (ctrl_id == IDC_EDIT1)
+				{
+					login_button_click(NULL, cur_program_page.handle);
+				}
+				else if (ctrl_id == IDC_TEXTBOX_PASSWORD)
+				{
+					save_button_click(NULL, cur_program_page.handle);
+				}
+			}
+			else if (wparam == VK_ESCAPE)
+			{
+				if (cur_program_page.id == IDD_PAGE_3)
+				{
+					abort_button_click(NULL, cur_program_page.handle);
+				}
+			}
+			else if (wparam == VK_TAB)
+			{
+				HWND currentFocus = GetFocus();
+				HWND nextControl = GetNextDlgTabItem(cur_program_page.handle, currentFocus, FALSE);
+
+				// Set the next control as the focus
+				SetFocus(nextControl);
+
+				return 0;
 			}
 
 			break;
 		}
 	}
 
-	return CallWindowProcW(old_textbox_wnd_proc, window_handle, message, wparam, lparam);
+	return DefSubclassProc(window_handle, message, wparam, lparam);
 }
 
 // UI controls
@@ -622,16 +710,23 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 
 			if (ctrl->cmd_id == IDC_EDIT1)
 			{
-				// If this is the first password textbox for the master password, subclass it to handle enter key
-				old_textbox_wnd_proc = (WNDPROC)SetWindowLongPtr(ui_handle, GWLP_WNDPROC, (LONG_PTR)textbox_wnd_proc);
-
 				SetFocus(ui_handle);
 
-				if (gSettings->asterisk_password)
+				if (gSettings->config & CFG_ASTERISK_PASSWORD)
 				{
 					SendMessage(ui_handle, EM_SETPASSWORDCHAR, L'•', 0);
 				}
 			}
+			else if (ctrl->cmd_id == IDC_TEXTBOX_PASSWORD)
+			{
+				if (gSettings->config & CFG_ASTERISK_PASSWORD)
+				{
+					SendMessage(ui_handle, EM_SETPASSWORDCHAR, L'•', 0);
+				}
+			}
+
+			// Subclass it to handle enter key pressed and escape key pressed events
+			SetWindowSubclass(ui_handle, textbox_wnd_proc, 0, 0);
 
 			break;
 		}
@@ -654,12 +749,35 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 		{
 			reset_window_theme(ui_handle);
 
-			if (gSettings->asterisk_password)
+			if (ctrl->cmd_id == IDC_CHECK1 || ctrl->cmd_id == IDC_NEW_PASSWORD_VISIBILITY)
 			{
-				SendMessage(ui_handle, BM_SETCHECK, BST_CHECKED, 0);
+				if (gSettings->config & CFG_ASTERISK_PASSWORD)
+				{
+					set_checkbox(ui_handle, BST_CHECKED);
+				}
+			}
+			else if (ctrl->cmd_id == IDC_CHECK_CHARS)
+			{
+				if (gSettings->config & CFG_USE_CHARACTERS)
+				{
+					set_checkbox(ui_handle, BST_CHECKED);
+				}
+			}
+			else if (ctrl->cmd_id == IDC_CHECK_NUMBERS)
+			{
+				if (gSettings->config & CFG_USE_NUMBERS)
+				{
+					set_checkbox(ui_handle, BST_CHECKED);
+				}
+			}
+			else if (ctrl->cmd_id == IDC_CHECK_SYMBOLS)
+			{
+				if (gSettings->config & CFG_USE_SYMBOLS)
+				{
+					set_checkbox(ui_handle, BST_CHECKED);
+				}
 			}
 
-			//size = (int)(((float)ui_height / 3.0f) * 2.9f);
 			size = ui_height;
 			break;
 		}
@@ -680,10 +798,9 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 		}
 	}
 
-	// Change the font
-	if (cur_program_page.id != IDD_PAGE_3)
+	if (ctrl->cmd_id != IDC_LABEL_LENGTH && ctrl->cmd_id != IDC_LABEL_LENGTH_NUM)
 	{
-		HFONT font = create_font(gSettings->font, size);
+		HFONT font = create_font(gFont, size);
 
 		if (change_ctrl_font(ctrl->handle, font) == FALSE)
 		{

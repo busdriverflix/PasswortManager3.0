@@ -24,6 +24,25 @@ void show_password_checkbox_click(_In_ HWND checkbox_handle, _In_ HWND parent_ha
 	SetFocus(textbox_handle);
 }
 
+void show_password_checkbox_new_click(_In_ HWND checkbox_handle, _In_ HWND parent_handle)
+{
+	BOOL checked = (SendMessage(checkbox_handle, BM_GETCHECK, 0, 0) == BST_CHECKED);
+
+	HWND passwordbox_handle = GetDlgItem(parent_handle, IDC_TEXTBOX_PASSWORD);
+
+	if (checked)
+	{
+		SendMessage(passwordbox_handle, EM_SETPASSWORDCHAR, L'•', 0);
+	}
+	else
+	{
+		SendMessage(passwordbox_handle, EM_SETPASSWORDCHAR, 0, 0);
+	}
+
+	//RedrawWindow(textbox_handle, NULL, NULL, RDW_ERASE | RDW_FRAME | RDW_INVALIDATE | RDW_ALLCHILDREN);
+	redraw_window(passwordbox_handle);
+}
+
 void login_button_click(_In_ HWND button_handle, _In_ HWND parent_handle)
 {
 	// Get the inputted password from the edit control
@@ -94,4 +113,31 @@ void length_slider_on_change(_In_ HWND slider_handle, _In_ HWND parent_handle)
 	SetWindowTextW(slider_display_label, buffer);
 
 	force_redraw_window(slider_display_label);
+}
+
+void save_button_click(_In_ HWND button_handle, _In_ HWND parent_handle)
+{
+	int x = 0;
+}
+
+void abort_button_click(_In_ HWND button_handle, _In_ HWND parent_handle)
+{
+	unload_current_page();
+
+	// Change position and size of the main window
+	int screen_width = GetSystemMetrics(SM_CXSCREEN);
+	int screen_height = GetSystemMetrics(SM_CYSCREEN);
+
+	int width = (int)(((float)screen_width / 3.0f) * 2.0f);
+	int height = (int)(((float)screen_height / 3.0f) * 2.0f);
+
+	int x = (screen_width - width) / 2;
+	int y = (screen_height - height) / 2;
+
+	SetWindowPos(gMainWindow->handle, NULL, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
+
+	UpdateWindow(gMainWindow->handle);
+
+	// Load in next page
+	load_page(IDD_PAGE_2);
 }

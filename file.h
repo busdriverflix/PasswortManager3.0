@@ -1,7 +1,7 @@
 #ifndef FILE_H
 #define FILE_H
 
-#define NUM_SETTINGS 5
+#define NUM_SETTINGS 7
 
 #include "global.h"
 

@@ -10,6 +10,8 @@
 Settings gSettings_s = { 0 };
 Settings* gSettings = &gSettings_s;
 
+wchar_t gFont[] = L"Calibri";
+
 wchar_t master_password[32] = { 0 };
 
 // Function prototypes
@@ -74,8 +76,7 @@ inline void load_settings(void)
 			.background = RGB(36, 42, 64),
 			.accent = RGB(51, 59, 90),
 			.foreground = RGB(255, 255, 255),
-			.font = L"Calibri",
-			.asterisk_password = TRUE
+			.config = (CFG_ASTERISK_PASSWORD | CFG_USE_CHARACTERS | CFG_USE_NUMBERS | CFG_USE_SYMBOLS)
 		};
 
 		if (write_settings_to_file(&default_settings, settings_path) == FALSE)
