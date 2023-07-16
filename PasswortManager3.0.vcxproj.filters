@@ -22,6 +22,9 @@
     <ClCompile Include="ctrl_command.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="program.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="global.h">
@@ -41,6 +44,9 @@
     </ClInclude>
     <ClInclude Include="resource.h" />
     <ClInclude Include="ctrl_command.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="program.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
