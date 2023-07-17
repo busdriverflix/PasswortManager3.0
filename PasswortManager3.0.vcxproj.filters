@@ -30,7 +30,6 @@
     <None Include="global.h">
       <Filter>src</Filter>
     </None>
-    <None Include="bool1.bin" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="util.h">

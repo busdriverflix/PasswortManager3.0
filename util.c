@@ -2,6 +2,7 @@
 #include <wchar.h>
 
 #include "util.h"
+#include "window.h"
 
 int messageboxf(_In_ UINT type, _In_ const wchar_t* const title, _In_ const wchar_t* const _format, ...)
 {
@@ -219,4 +220,39 @@ COLORREF adjust_brightness(_In_ COLORREF color, _In_ int amount, _In_ BOOL incre
     }
 
     return RGB(red, green, blue);
+}
+
+void switch_window_position_and_style(_In_ unsigned int type)
+{
+    // Set the main window style to include maximize box and thickframe
+    DWORD main_window_style = get_window_style(gMainWindow->handle);
+
+    // Change position and size of the main window
+    int screen_width = GetSystemMetrics(SM_CXSCREEN);
+    int screen_height = GetSystemMetrics(SM_CYSCREEN);
+
+    int width = 0;
+    int height = 0;
+
+    if (type == WND_POS_TYPE_RESIZE || (type != WND_POS_TYPE_RESIZE && type != WND_POS_TYPE_NORESIZE))
+    {
+        main_window_style |= (WS_MAXIMIZEBOX | WS_THICKFRAME);
+        width = (int)(((float)screen_width / 3.0f) * 2.0f);
+        height = (int)(((float)screen_height / 3.0f) * 2.0f);
+    }
+    else if (type == WND_POS_TYPE_NORESIZE)
+    {
+        main_window_style &= ~(WS_MAXIMIZEBOX | WS_THICKFRAME | WS_MAXIMIZE);
+        width = (screen_width / 2) + 16;
+        height = (screen_height / 2) + 39;
+    }
+
+    set_window_style(gMainWindow->handle, main_window_style);
+
+    int x = (screen_width - width) / 2;
+    int y = (screen_height - height) / 2;
+
+    SetWindowPos(gMainWindow->handle, NULL, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
+
+    UpdateWindow(gMainWindow->handle);
 }

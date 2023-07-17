@@ -148,7 +148,6 @@
     <ClCompile Include="window.c" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="bool1.bin" />
     <None Include="global.h" />
   </ItemGroup>
   <ItemGroup>

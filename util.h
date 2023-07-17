@@ -46,4 +46,10 @@ RECT adjust_rect(_In_ RECT* input, _In_ int amount_in_pixels, _In_ BOOL inside);
 COLORREF adjust_brightness(_In_ COLORREF color, _In_ int amount, _In_ BOOL increase);
 #define INVERT_COLOR(color) ((~color) & 0xFFFFFFFF)
 
+// Window position and size types
+#define WND_POS_TYPE_NORESIZE	0x0000
+#define WND_POS_TYPE_RESIZE		0x0001
+
+void switch_window_position_and_style(_In_ unsigned int type);
+
 #endif

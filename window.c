@@ -187,6 +187,8 @@ static inline void page_on_resize(_In_ HWND page_handle, _In_ LPARAM lparam)
 		int ui_height = (int)(cur_ctrl->height * 0.5f * page_new_height);
 
 		SetWindowPos(cur_ctrl->handle, NULL, ui_x, ui_y, ui_width, ui_height, SWP_NOZORDER | SWP_NOACTIVATE);
+
+		redraw_window(cur_ctrl->handle);
 	}
 }
 
@@ -209,11 +211,21 @@ static inline void page_on_command(_In_ HWND page_handle, _In_ WPARAM wparam, _I
 		case IDC_NEW_PASSWORD_VISIBILITY:
 			show_password_checkbox_new_click(ctrl_handle, page_handle);
 			break;
+		case IDC_CHECK_CHARS_BIG:
+		case IDC_CHECK_CHARS_SMALL:
+		case IDC_CHECK_NUMBERS:
+		case IDC_CHECK_SYMBOLS:
+			checkbox_cfg_click(ctrl_handle, page_handle, ctrl_id);
+			break;
 		case IDC_SAVE_PASSWORD:
 			save_button_click(ctrl_handle, page_handle);
 			break;
 		case IDC_ABORT:
 			abort_button_click(ctrl_handle, page_handle);
+			break;
+		case IDC_BUTTON_GENERATE:
+			generate_button_click(ctrl_handle, page_handle);
+			break;
 	}
 }
 
@@ -442,7 +454,7 @@ static inline void page_draw_items(_In_ HWND page_handle, _In_ LPDRAWITEMSTRUCT 
 		}
 		case UICT_LABEL:
 		{
-			if (lpDrawItemStruct->CtlID == IDC_NEW_CAPTION)
+			if (lpDrawItemStruct->CtlID == IDC_NEW_CAPTION || lpDrawItemStruct->CtlID == IDC_PASSWORDS_CAPTION)
 				page_draw_caption(lpDrawItemStruct);
 			else
 				page_draw_label(lpDrawItemStruct);
@@ -633,6 +645,16 @@ LRESULT CALLBACK textbox_wnd_proc(HWND window_handle, UINT message, WPARAM wpara
 				{
 					save_button_click(NULL, cur_program_page.handle);
 				}
+				else
+				{
+					HWND currentFocus = GetFocus();
+					HWND nextControl = GetNextDlgTabItem(cur_program_page.handle, currentFocus, FALSE);
+
+					// Set the next control as the focus
+					SetFocus(nextControl);
+
+					return 0;
+				}
 			}
 			else if (wparam == VK_ESCAPE)
 			{
@@ -741,6 +763,9 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 					set_window_style(ui_handle, (WS_CHILD | WS_VISIBLE | SS_OWNERDRAW));
 				}
 			}
+			
+			if (ctrl->cmd_id == IDC_PASSWORDS_CAPTION || ctrl->cmd_id == IDC_WELCOME_CAPTION)
+				set_window_style(ui_handle, (WS_CHILD | WS_VISIBLE | SS_OWNERDRAW));
 
 			size = (int)(((float)ui_height / 3.0f) * 2.5f);
 			break;
@@ -756,9 +781,16 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 					set_checkbox(ui_handle, BST_CHECKED);
 				}
 			}
-			else if (ctrl->cmd_id == IDC_CHECK_CHARS)
+			else if (ctrl->cmd_id == IDC_CHECK_CHARS_BIG)
 			{
-				if (gSettings->config & CFG_USE_CHARACTERS)
+				if (gSettings->config & CFG_USE_BIG_CHARS)
+				{
+					set_checkbox(ui_handle, BST_CHECKED);
+				}
+			}
+			else if (ctrl->cmd_id == IDC_CHECK_CHARS_SMALL)
+			{
+				if (gSettings->config & CFG_USE_SMALL_CHARS)
 				{
 					set_checkbox(ui_handle, BST_CHECKED);
 				}
@@ -788,7 +820,7 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 		}
 		case UICT_SLIDER:
 		{
-			SendMessageW(ui_handle, TBM_SETRANGE, TRUE, MAKELPARAM(5, 30));
+			SendMessageW(ui_handle, TBM_SETRANGE, TRUE, MAKELPARAM(4, 30));
 			break;
 		}
 		default:
