@@ -3,12 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <stdint.h>
-//#include <stdbool.h>
 #include <wchar.h>
 #include <windows.h>
-//#include <wctype.h>
-//#include <wincrypt.h>
 #include <openssl/conf.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>

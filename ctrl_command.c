@@ -43,7 +43,7 @@ void welcome_create_button_click(_In_ HWND button_handle, _In_ HWND parent_handl
 
 	decrypt_str(profile.encrypted_password, app_encrypt_decrypt_password, decrypted_password);
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || !defined(_DEBUG)
 	messageboxf(MB_OK, L"Passwörter", L"Unencrypted password: %hs\nEncrypted password: %hs\nDecrypted password: %hs", password, profile.encrypted_password, decrypted_password);
 #endif
 }
