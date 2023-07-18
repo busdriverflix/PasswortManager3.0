@@ -1,4 +1,7 @@
+#pragma warning(push, 0)
+#pragma warning(disable: 4668)
 #include <windows.h>
+#pragma warning(pop)
 #include <commctrl.h>
 #include <shlwapi.h>
 #include <wchar.h>
@@ -12,8 +15,7 @@ Settings gSettings_s = { 0 };
 Settings* gSettings = &gSettings_s;
 
 wchar_t gFont[] = L"Calibri";
-wchar_t master_password[32] = { 0 };
-const wchar_t app_encrypt_decrypt_password[] = L"<g88Ü-96n4T$9e<6w)o(ö7äq§0h9hd";
+const char app_encrypt_decrypt_password[] = "<g88U-96n4T$9e<6w)o(o7aq§0h9hd";
 Profiles gProfiles_s = { 0 };
 Profiles* gProfiles = &gProfiles_s;
 
@@ -94,13 +96,19 @@ inline void load_settings(void)
 
 inline void check_profiles_file(void)
 {
-	wchar_t exepath[MAX_PATH];
-	GetModuleFileNameW(NULL, exepath, MAX_PATH);
-	PathRemoveFileSpecW(exepath);
+	wchar_t* appdata_roaming_path = get_roaming_folder_path();
+
+	if (appdata_roaming_path == NULL)
+		error_exit();
 
 	wchar_t profiles_path[MAX_PATH];
 
-	swprintf_s(profiles_path, MAX_PATH, L"%s\\ProfileData.profiles", exepath);
+	swprintf_s(profiles_path, MAX_PATH, L"%s\\PasswortManager\\", appdata_roaming_path);
+
+	if (create_folder(profiles_path) == FALSE)
+		error_exit();
+
+	swprintf_s(profiles_path, MAX_PATH, L"%s\\PasswortManager\\ProfileData.profiles", appdata_roaming_path);
 
 	if (!PathFileExistsW(profiles_path))
 	{
@@ -112,5 +120,10 @@ inline void check_profiles_file(void)
 			error_exit();
 		else
 			fclose(fp);
+
+		return;
 	}
+
+	// Read profile data
+	read_profiles_from_file(profiles_path);
 }

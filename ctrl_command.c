@@ -1,8 +1,52 @@
-﻿#include "util.h"
+﻿#pragma warning(push, 0)
+#pragma warning(disable: 4668)
+#include <windows.h>
+#pragma warning(pop)
+#include <CommCtrl.h>
+
+#include "util.h"
 #include "resource.h"
 #include "window.h"
 #include "global.h"
 #include "program.h"
+#include "file.h"
+
+void welcome_create_button_click(_In_ HWND button_handle, _In_ HWND parent_handle)
+{
+	// Get the name and password from the text boxes, check for any invalid inputs and then save them in the profiles file
+	wchar_t name[16];
+	char password[31];
+
+	HWND name_textbox_handle = GetDlgItem(parent_handle, IDC_WELCOME_NAME);
+	HWND password_box_handle = GetDlgItem(parent_handle, IDC_WELCOME_PASSWORD);
+
+	// Retrieve the text from the textboxes
+	/*SendMessage(name_textbox_handle, WM_GETTEXT, sizeof(name), (LPARAM)name);
+	SendMessageA(password_box_handle, WM_GETTEXT, sizeof(password), (LPARAM)password);*/
+	GetWindowTextW(name_textbox_handle, name, 16);
+	GetWindowTextA(password_box_handle, password, 31);
+
+	// Make sure string is null terminated
+	/*name[15] = '\0';
+	password[30] = name[15];*/
+
+	// Create a profile from the inputs
+	Profile profile = { 0 };
+
+	// Copy name
+	wcscpy_s(profile.name, 16, name);
+
+	// Encode the password and save it to the profile
+	encrypt_str(password, app_encrypt_decrypt_password, profile.encrypted_password);
+
+	char decrypted_password[256] = { 0 };
+
+	decrypt_str(profile.encrypted_password, app_encrypt_decrypt_password, decrypted_password);
+
+#ifdef _DEBUG
+	messageboxf(MB_OK, L"Passwörter", L"Unencrypted password: %hs\nEncrypted password: %hs\nDecrypted password: %hs", password, profile.encrypted_password, decrypted_password);
+#endif
+}
 
 void show_password_checkbox_click(_In_ HWND checkbox_handle, _In_ HWND parent_handle)
 {
@@ -44,6 +88,24 @@ void show_password_checkbox_new_click(_In_ HWND checkbox_handle, _In_ HWND paren
 	redraw_window(passwordbox_handle);
 }
 
+void show_password_checkbox_welcome_click(_In_ HWND checkbox_handle, _In_ HWND parent_handle)
+{
+	BOOL checked = (SendMessage(checkbox_handle, BM_GETCHECK, 0, 0) == BST_CHECKED);
+
+	HWND passwordbox_handle = GetDlgItem(parent_handle, IDC_WELCOME_PASSWORD);
+
+	if (checked)
+	{
+		SendMessage(passwordbox_handle, EM_SETPASSWORDCHAR, L'•', 0);
+	}
+	else
+	{
+		SendMessage(passwordbox_handle, EM_SETPASSWORDCHAR, 0, 0);
+	}
+
+	redraw_window(passwordbox_handle);
+}
+
 void checkbox_cfg_click(_In_ HWND checkbox_handle, _In_ HWND parent_handle, _In_ int cmd_id)
 {
 	BOOL checked = (SendMessage(checkbox_handle, BM_GETCHECK, 0, 0) == BST_CHECKED);
@@ -71,7 +133,7 @@ void login_button_click(_In_ HWND button_handle, _In_ HWND parent_handle)
 	HWND textbox_handle = GetDlgItem(parent_handle, IDC_EDIT1);
 
 	// Copy the password the user typed to the global master_password string
-	SendMessage(textbox_handle, WM_GETTEXT, sizeof(wchar_t) * 32, (LPARAM)master_password);
+	//SendMessage(textbox_handle, WM_GETTEXT, sizeof(wchar_t) * 30, (LPARAM)master_password);
 
 	// Unload the previous page
 	unload_current_page();
@@ -109,7 +171,7 @@ void length_slider_on_change(_In_ HWND slider_handle, _In_ HWND parent_handle)
 
 void save_button_click(_In_ HWND button_handle, _In_ HWND parent_handle)
 {
-	int x = 0;
+	
 }
 
 void abort_button_click(_In_ HWND button_handle, _In_ HWND parent_handle)
@@ -136,7 +198,7 @@ void generate_button_click(_In_ HWND button_handle, _In_ HWND parent_handle)
 
 	int length = SendMessageW(slider_handle, TBM_GETPOS, 0, 0);
 
-	wchar_t buffer[31]; // Don't forget null terminator
+	wchar_t buffer[31]; // Don't forget null terminator (30 characters plus the null character)
 
 	generate_password(buffer, length, gSettings->config);
 

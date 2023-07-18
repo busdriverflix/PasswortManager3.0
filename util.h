@@ -1,7 +1,10 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#pragma warning(push, 0)
+#pragma warning(disable: 4668)
 #include <windows.h>
+#pragma warning(pop)
 #include <wchar.h>
 
 #define HEAP_ALLOC(size) (HeapAlloc(GetProcessHeap(), 0, size))
@@ -13,6 +16,7 @@
 #define RECT_HEIGHT(rect) (rect.bottom - rect.top)
 
 #define WSTR_EQUALS(str1, str2) (wcscmp(str1, str2) == 0)
+#define STR_EQUALS(str1, str2) (strcmp(str1, str2) == 0)
 
 #define get_window_style(window_handle) (GetWindowLongPtr(window_handle, GWL_STYLE))
 #define get_class_style(window_handle) (GetClassLongPtr(window_handle, GCL_STYLE))
@@ -51,5 +55,9 @@ COLORREF adjust_brightness(_In_ COLORREF color, _In_ int amount, _In_ BOOL incre
 #define WND_POS_TYPE_RESIZE		0x0001
 
 void switch_window_position_and_style(_In_ unsigned int type);
+
+wchar_t* get_roaming_folder_path(void);
+BOOL create_folder(_In_ const wchar_t* destination_path);
+BOOL file_is_empty(_In_ const wchar_t* file_path);
 
 #endif

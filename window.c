@@ -1,5 +1,8 @@
 ﻿#include <stdint.h>
+#pragma warning(push, 0)
+#pragma warning(disable: 4668)
 #include <windows.h>
+#pragma warning(pop)
 #include <CommCtrl.h>
 
 #include "window.h"
@@ -70,7 +73,18 @@ LRESULT CALLBACK main_wnd_proc(HWND window_handle, UINT message, WPARAM wparam, 
 	{
 		case WM_INITIALIZED:
 		{
-			load_page(IDD_PAGE_1);
+			wchar_t profile_data_file_path[MAX_PATH];
+			swprintf_s(profile_data_file_path, MAX_PATH, L"%s\\PasswortManager\\ProfileData.profiles", get_roaming_folder_path());
+
+			if (file_is_empty(profile_data_file_path))
+			{
+				load_page(IDD_PAGE_0);
+			}
+			else
+			{
+				load_page(IDD_PAGE_1);
+			}
+
 			break;
 		}
 		case WM_CLOSE:
@@ -199,6 +213,9 @@ static inline void page_on_command(_In_ HWND page_handle, _In_ WPARAM wparam, _I
 
 	switch (ctrl_id)
 	{
+		case IDC_WELCOME_CREATE:
+			welcome_create_button_click(ctrl_handle, page_handle);
+			break;
 		case IDC_CHECK1:
 			show_password_checkbox_click(ctrl_handle, page_handle);
 			break;
@@ -210,6 +227,9 @@ static inline void page_on_command(_In_ HWND page_handle, _In_ WPARAM wparam, _I
 			break;
 		case IDC_NEW_PASSWORD_VISIBILITY:
 			show_password_checkbox_new_click(ctrl_handle, page_handle);
+			break;
+		case IDC_WELCOME_CHECK_PASSWORD_VISIBILITY:
+			show_password_checkbox_welcome_click(ctrl_handle, page_handle);
 			break;
 		case IDC_CHECK_CHARS_BIG:
 		case IDC_CHECK_CHARS_SMALL:
@@ -454,7 +474,7 @@ static inline void page_draw_items(_In_ HWND page_handle, _In_ LPDRAWITEMSTRUCT 
 		}
 		case UICT_LABEL:
 		{
-			if (lpDrawItemStruct->CtlID == IDC_NEW_CAPTION || lpDrawItemStruct->CtlID == IDC_PASSWORDS_CAPTION)
+			if (lpDrawItemStruct->CtlID == IDC_NEW_CAPTION || lpDrawItemStruct->CtlID == IDC_WELCOME_CAPTION)
 				page_draw_caption(lpDrawItemStruct);
 			else
 				page_draw_label(lpDrawItemStruct);
@@ -623,8 +643,6 @@ LRESULT CALLBACK page_wnd_proc(HWND page_handle, UINT message, WPARAM wparam, LP
 	return DefWindowProcW(page_handle, message, wparam, lparam);
 }
 
-//WNDPROC old_textbox_wnd_proc = NULL;
-
 LRESULT CALLBACK textbox_wnd_proc(HWND window_handle, UINT message, WPARAM wparam, LPARAM lparam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
 	switch (message)
@@ -728,7 +746,7 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 		}
 		case UICT_TEXTBOX:
 		{
-			SendMessage(ui_handle, EM_LIMITTEXT, MAX_PASSWORD_COUNT, 0);
+			SendMessage(ui_handle, EM_LIMITTEXT, (ctrl->cmd_id == IDC_WELCOME_NAME) ? 15 : 30, 0);
 
 			if (ctrl->cmd_id == IDC_EDIT1)
 			{
@@ -739,7 +757,11 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 					SendMessage(ui_handle, EM_SETPASSWORDCHAR, L'•', 0);
 				}
 			}
-			else if (ctrl->cmd_id == IDC_TEXTBOX_PASSWORD)
+			else if (ctrl->cmd_id == IDC_WELCOME_NAME)
+			{
+				SetFocus(ui_handle);
+			}
+			else if (ctrl->cmd_id == IDC_TEXTBOX_PASSWORD || ctrl->cmd_id == IDC_WELCOME_PASSWORD)
 			{
 				if (gSettings->config & CFG_ASTERISK_PASSWORD)
 				{
@@ -763,9 +785,10 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 					set_window_style(ui_handle, (WS_CHILD | WS_VISIBLE | SS_OWNERDRAW));
 				}
 			}
-			
-			if (ctrl->cmd_id == IDC_PASSWORDS_CAPTION || ctrl->cmd_id == IDC_WELCOME_CAPTION)
+			else if (ctrl->cmd_id == IDC_PASSWORDS_CAPTION || ctrl->cmd_id == IDC_WELCOME_CAPTION || cur_program_page.id == IDD_PAGE_0)
+			{
 				set_window_style(ui_handle, (WS_CHILD | WS_VISIBLE | SS_OWNERDRAW));
+			}				
 
 			size = (int)(((float)ui_height / 3.0f) * 2.5f);
 			break;
@@ -774,7 +797,7 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 		{
 			reset_window_theme(ui_handle);
 
-			if (ctrl->cmd_id == IDC_CHECK1 || ctrl->cmd_id == IDC_NEW_PASSWORD_VISIBILITY)
+			if (ctrl->cmd_id == IDC_CHECK1 || ctrl->cmd_id == IDC_NEW_PASSWORD_VISIBILITY || ctrl->cmd_id == IDC_WELCOME_CHECK_PASSWORD_VISIBILITY)
 			{
 				if (gSettings->config & CFG_ASTERISK_PASSWORD)
 				{

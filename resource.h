@@ -9,6 +9,7 @@
 #define IDC_BUTTON1                     1003
 #define IDC_EDIT1                       1004
 #define IDC_BUTTON_EDIT                 1005
+#define IDC_WELCOME_PASSWORD            1005
 #define IDC_CHECK1                      1006
 #define IDC_BUTTON_NEW                  1007
 #define IDC_CHECK_NUMBERS               1008
@@ -31,6 +32,9 @@
 #define IDC_CHECK_CHARS_SMALL           1026
 #define IDC_PASSWORDS_CAPTION           1026
 #define IDC_WELCOME_CAPTION             1027
+#define IDC_WELCOME_NAME                1028
+#define IDC_WELCOME_CHECK_PASSWORD_VISIBILITY 1029
+#define IDC_WELCOME_CREATE              1030
 
 // Next default values for new objects
 // 
@@ -38,7 +42,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        112
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1028
+#define _APS_NEXT_CONTROL_VALUE         1031
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

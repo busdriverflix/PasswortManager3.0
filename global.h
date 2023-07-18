@@ -1,7 +1,10 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
+#pragma warning(push, 0)
+#pragma warning(disable: 4668)
 #include <windows.h>
+#pragma warning(pop)
 
 #define DBB() __debugbreak()
 
@@ -10,6 +13,8 @@
 #define CFG_USE_SMALL_CHARS     0x0004
 #define CFG_USE_NUMBERS			0x0008
 #define CFG_USE_SYMBOLS			0x0010
+
+#define MAX_PROFILES 5
 
 typedef struct Settings
 {
@@ -21,23 +26,23 @@ typedef struct Settings
 
 typedef struct Profile
 {
-	wchar_t* name;
-	wchar_t* encrypted_password;
+	wchar_t name[16];
+	char encrypted_password[156];
 } Profile;
 
 typedef struct Profiles
 {
-	Profile* profiles;
+	Profile* profiles[MAX_PROFILES];
 	short num_profiles;
 	short default_profile_index;
+	short current_profile;
 
 } Profiles;
 
 #endif
 
 extern Settings* gSettings;
-extern wchar_t master_password[];
 
 extern wchar_t gFont[];
-extern const wchar_t app_encrypt_decrypt_password[];
+extern const char app_encrypt_decrypt_password[];
 extern Profiles* gProfiles;

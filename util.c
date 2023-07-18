@@ -1,5 +1,6 @@
 #include <stdarg.h>
 #include <wchar.h>
+#include <shlobj.h>
 
 #include "util.h"
 #include "window.h"
@@ -255,4 +256,47 @@ void switch_window_position_and_style(_In_ unsigned int type)
     SetWindowPos(gMainWindow->handle, NULL, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
 
     UpdateWindow(gMainWindow->handle);
+}
+
+wchar_t* get_roaming_folder_path(void)
+{
+    wchar_t* path = NULL;
+
+    // Get the path to the Roaming folder
+    HRESULT result = SHGetKnownFolderPath(&FOLDERID_RoamingAppData, 0, NULL, &path);
+    if (SUCCEEDED(result))
+    {
+        return path;
+    }
+
+    return NULL;
+}
+
+BOOL create_folder(_In_ const wchar_t* destination_path)
+{
+    if (CreateDirectoryW(destination_path, NULL) == TRUE)
+        return TRUE;
+    else
+    {
+        if (GetLastError() == ERROR_ALREADY_EXISTS)
+            return TRUE;
+        else
+            return FALSE;
+    }
+}
+
+BOOL file_is_empty(_In_ const wchar_t* file_path)
+{
+    HANDLE file = CreateFileW(file_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+    if (file != INVALID_HANDLE_VALUE)
+    {
+        DWORD file_size = GetFileSize(file, NULL);
+        CloseHandle(file);
+
+        return (file_size == 0);
+    }
+
+    // Failed to open the file
+    return FALSE;
 }

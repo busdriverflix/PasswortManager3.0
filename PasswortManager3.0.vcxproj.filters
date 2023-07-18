@@ -30,6 +30,7 @@
     <None Include="global.h">
       <Filter>src</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="util.h">
