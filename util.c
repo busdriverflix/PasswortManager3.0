@@ -258,7 +258,7 @@ void switch_window_position_and_style(_In_ unsigned int type)
     UpdateWindow(gMainWindow->handle);
 }
 
-wchar_t* get_roaming_folder_path(void)
+wchar_t* get_roaming_folder_path_wstr(void)
 {
     wchar_t* path = NULL;
 
@@ -270,6 +270,26 @@ wchar_t* get_roaming_folder_path(void)
     }
 
     return NULL;
+}
+
+char* get_roaming_folder_path(void)
+{
+    char* path = NULL;
+
+    // Get the path to the Roaming folder
+    PWSTR widePath;
+    HRESULT result = SHGetKnownFolderPath(&FOLDERID_RoamingAppData, 0, NULL, &widePath);
+    if (SUCCEEDED(result))
+    {
+        // Convert wide string to multi-byte string
+        int pathLen = WideCharToMultiByte(CP_UTF8, 0, widePath, -1, NULL, 0, NULL, NULL);
+        path = (char*)malloc(pathLen);
+        WideCharToMultiByte(CP_UTF8, 0, widePath, -1, path, pathLen, NULL, NULL);
+
+        CoTaskMemFree(widePath);
+    }
+
+    return path;
 }
 
 BOOL create_folder(_In_ const wchar_t* destination_path)

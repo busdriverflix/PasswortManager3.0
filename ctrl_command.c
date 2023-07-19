@@ -3,6 +3,7 @@
 #include <windows.h>
 #pragma warning(pop)
 #include <CommCtrl.h>
+#include <stdio.h>
 
 #include "util.h"
 #include "resource.h"
@@ -23,29 +24,50 @@ void welcome_create_button_click(_In_ HWND button_handle, _In_ HWND parent_handl
 	// Retrieve the text from the textboxes
 	/*SendMessage(name_textbox_handle, WM_GETTEXT, sizeof(name), (LPARAM)name);
 	SendMessageA(password_box_handle, WM_GETTEXT, sizeof(password), (LPARAM)password);*/
-	GetWindowTextW(name_textbox_handle, name, 16);
-	GetWindowTextA(password_box_handle, password, 31);
-
-	// Make sure string is null terminated
-	/*name[15] = '\0';
-	password[30] = name[15];*/
+	GetWindowTextW(name_textbox_handle, name, 15);
+	GetWindowTextA(password_box_handle, password, 30);
 
 	// Create a profile from the inputs
-	Profile profile = { 0 };
+	Profile* profile = HEAP_ALLOCZ(sizeof(Profile));
+
+	if (profile == NULL)
+	{
+		// TODO: Handle error
+		return;
+	}
 
 	// Copy name
-	wcscpy_s(profile.name, 16, name);
+	wcscpy_s(profile->name, 15, name);
 
 	// Encode the password and save it to the profile
-	encrypt_str(password, app_encrypt_decrypt_password, profile.encrypted_password);
+	encrypt_str(password, app_encrypt_decrypt_password, profile->encrypted_password);
 
-	char decrypted_password[256] = { 0 };
+	// Create the password file for the profile
+	wchar_t* appdata_path = get_roaming_folder_path_wstr();
+	wchar_t file_path[MAX_PATH];
+	swprintf_s(file_path, MAX_PATH, L"%s\\PasswortManager\\%s.DATA", appdata_path, profile->name);
 
-	decrypt_str(profile.encrypted_password, app_encrypt_decrypt_password, decrypted_password);
+	// Write the number of passwords (0 at this point)
+	FILE* fp = NULL;
+	_wfopen_s(&fp, file_path, L"w");
+	fwprintf_s(fp, "0");
+	fclose(fp);
 
-#if defined(_DEBUG) || !defined(_DEBUG)
-	messageboxf(MB_OK, L"Passwörter", L"Unencrypted password: %hs\nEncrypted password: %hs\nDecrypted password: %hs", password, profile.encrypted_password, decrypted_password);
-#endif
+	// Write the profile to the profiles file
+	swprintf_s(file_path, MAX_PATH, L"%s\\PasswortManager\\ProfileData.profiles", appdata_path);
+	append_profile_to_file(file_path, profile, TRUE);
+
+	// Add the profile to the global profiles struct
+	gProfiles->profiles[0] = profile;
+	gProfiles->current_profile = 0;
+	gProfiles->default_profile_index = 0;
+	gProfiles->num_profiles = 1;
+
+	unload_current_page();
+
+	switch_window_position_and_style(WND_POS_TYPE_RESIZE);
+
+	load_page(IDD_PAGE_2);
 }
 
 void show_password_checkbox_click(_In_ HWND checkbox_handle, _In_ HWND parent_handle)

@@ -24,10 +24,22 @@ typedef struct Settings
 
 } Settings;
 
+typedef struct PasswordEntry
+{
+	char encrypted_name[31];
+	char encrypted_user_name[31];
+	char encrypted_email[31];
+	char encrypted_password[31];
+
+} PasswordEntry;
+
 typedef struct Profile
 {
 	wchar_t name[16];
-	char encrypted_password[156];
+	char encrypted_password[31];
+	int num_passwords;
+	PasswordEntry* passwords;
+
 } Profile;
 
 typedef struct Profiles

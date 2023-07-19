@@ -35,6 +35,7 @@
 #define IDC_WELCOME_NAME                1028
 #define IDC_WELCOME_CHECK_PASSWORD_VISIBILITY 1029
 #define IDC_WELCOME_CREATE              1030
+#define IDC_COMBO2                      1034
 
 // Next default values for new objects
 // 
@@ -42,7 +43,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        112
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1031
+#define _APS_NEXT_CONTROL_VALUE         1035
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

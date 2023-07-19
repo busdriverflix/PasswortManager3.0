@@ -56,7 +56,8 @@ COLORREF adjust_brightness(_In_ COLORREF color, _In_ int amount, _In_ BOOL incre
 
 void switch_window_position_and_style(_In_ unsigned int type);
 
-wchar_t* get_roaming_folder_path(void);
+wchar_t* get_roaming_folder_path_wstr(void);
+char* get_roaming_folder_path(void);
 BOOL create_folder(_In_ const wchar_t* destination_path);
 BOOL file_is_empty(_In_ const wchar_t* file_path);
 

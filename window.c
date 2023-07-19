@@ -74,7 +74,7 @@ LRESULT CALLBACK main_wnd_proc(HWND window_handle, UINT message, WPARAM wparam, 
 		case WM_INITIALIZED:
 		{
 			wchar_t profile_data_file_path[MAX_PATH];
-			swprintf_s(profile_data_file_path, MAX_PATH, L"%s\\PasswortManager\\ProfileData.profiles", get_roaming_folder_path());
+			swprintf_s(profile_data_file_path, MAX_PATH, L"%s\\PasswortManager\\ProfileData.profiles", get_roaming_folder_path_wstr());
 
 			if (file_is_empty(profile_data_file_path))
 			{
@@ -129,7 +129,6 @@ LRESULT CALLBACK main_wnd_proc(HWND window_handle, UINT message, WPARAM wparam, 
 
 			lpMMI->ptMinTrackSize.x = (screen_width / 2) + PROVISIONALLY_WIDTH_EXTRA;
 			lpMMI->ptMinTrackSize.y = (screen_height / 2) + PROVISIONALLY_HEIGHT_EXTRA;
-			break;
 			break;
 		}
 	}
@@ -515,6 +514,11 @@ LRESULT CALLBACK page_wnd_proc(HWND page_handle, UINT message, WPARAM wparam, LP
 
 				SetFocus(name_textbox);
 			}
+			else if (cur_program_page.id == IDD_PAGE_2)
+			{
+				// Load passwords from the currently selected profile
+
+			}
 
 			break;
 		}
@@ -853,7 +857,7 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 		}
 	}
 
-	if (ctrl->cmd_id != IDC_LABEL_LENGTH && ctrl->cmd_id != IDC_LABEL_LENGTH_NUM)
+	if (ctrl->cmd_id != IDC_LABEL_LENGTH && ctrl->cmd_id != IDC_LABEL_LENGTH_NUM && ctrl->type != UICT_COMBOBOX)
 	{
 		HFONT font = create_font(gFont, size);
 
@@ -900,6 +904,10 @@ UICtrlType get_type_from_hwnd(_In_ HWND ui_handle)
 	else if (WSTR_EQUALS(buffer, L"msctls_trackbar32"))
 	{
 		return UICT_SLIDER;
+	}
+	else if (WSTR_EQUALS(buffer, WC_COMBOBOXW))
+	{
+		return UICT_COMBOBOX;
 	}
 
 	return UICT_NONE;

@@ -108,12 +108,17 @@ void read_profiles_from_file(_In_ const wchar_t* file_path)
 
 		BOOL default_profile = FALSE;
 
-		if (swscanf_s(line_buffer, profile_file_format_string, new_profile->name, _countof(new_profile->name), new_profile->encrypted_password, _countof(new_profile->encrypted_password), &default_profile) == 3)
+		wchar_t encrypted_password_wstr[31];
+
+		if (swscanf_s(line_buffer, L"Profile:Name:'%[^']',PW:'%[^']',Default:%d;", new_profile->name, _countof(new_profile->name), encrypted_password_wstr, _countof(encrypted_password_wstr), &default_profile) == 3)
 		{
 			if (default_profile)
 				gProfiles->default_profile_index = gProfiles->num_profiles;
 
 			gProfiles->profiles[gProfiles->num_profiles++] = new_profile;
+
+			size_t num_converted = 0;
+			wcstombs_s(&num_converted, new_profile->encrypted_password, 31, encrypted_password_wstr, sizeof(encrypted_password_wstr));
 		}
 		else
 		{
@@ -138,14 +143,100 @@ BOOL append_profile_to_file(_In_ const wchar_t* file_path, _In_ Profile* profile
 	if (fp == NULL)
 		return FALSE;
 
-	fwprintf_s(fp, L"Profile:Name:'%s',PW:'%s',Default:%d;", profile->name, profile->encrypted_password, is_default);
+	fwprintf_s(fp, L"Profile:Name:'%s',PW:'%hs',Default:%d;", profile->name, profile->encrypted_password, is_default);
 
 	fclose(fp);
 
 	return TRUE;
 }
 
+void save_passwords_from_profile(_In_ Profile* profile)
+{
+	// Get the path to the password file of the profile
+	char* appdata_roaming_path = get_roaming_folder_path();
+	char file_path[MAX_PATH];
+	sprintf_s(file_path, MAX_PATH, "%s\\PasswortManager\%S.DATA", appdata_roaming_path, profile->name);
+
+	FILE* fp = NULL;
+	fopen_s(&fp, file_path, "w");
+
+	if (fp == NULL)
+	{
+		// TODO: Handle error
+		return;
+	}
+
+	// Number of passwords
+	fprintf_s(fp, "%d\n", profile->num_passwords);
+
+	// Write each password entry to file
+	for (int i = 0; i < profile->num_passwords; i++)
+	{
+		fprintf_s(fp, "%s\n%s\n%s\n%s\n", profile->passwords[i].encrypted_name, profile->passwords[i].encrypted_user_name, profile->passwords[i].encrypted_email, profile->passwords[i].encrypted_password);
+	}
+
+	fclose(fp);
+}
+
 void read_passwords_from_profile(_In_ Profile* profile)
 {
+	// Get file name of the profile
+	char* appdata_roaming_path = get_roaming_folder_path();
 
+	char file_path[MAX_PATH];
+	sprintf_s(file_path, MAX_PATH, "%s\\PasswortManager\\%S.DATA", appdata_roaming_path, profile->name);
+
+	FILE* fp = NULL;
+	fopen_s(&fp, file_path, "r");
+
+	if (fp == NULL)
+	{
+		// TODO: Handle error
+		return;
+	}
+
+	char line[8];
+	fgets(line, sizeof(line), fp);
+	sscanf_s(line, "%d", &profile->num_passwords);
+
+	if (profile->passwords == 0)
+	{
+		fclose(fp);
+		return;
+	}
+
+	profile->passwords = HEAP_ALLOCZ(sizeof(PasswordEntry) * profile->num_passwords);
+
+	if (profile->passwords == NULL)
+	{
+		// TODO: Handle error
+		__debugbreak();
+		return;
+	}
+
+	for (int i = 0; i < profile->num_passwords; i++) 
+	{
+		fgets(profile->passwords[i].encrypted_name, 30, fp);
+		fgets(profile->passwords[i].encrypted_user_name, 30, fp);
+		fgets(profile->passwords[i].encrypted_email, 30, fp);
+		fgets(profile->passwords[i].encrypted_password, 30, fp);
+	}
+
+	fclose(fp);
+}
+
+void read_line_from_file(_In_ FILE* opened_file, _In_ char* buffer, _In_ int max_count, _In_ int line_number)
+{
+	// Put cursor back to start
+	rewind(opened_file);
+
+	// Read each line until the desired line number is reached
+	int current_line = 0;
+	while (current_line < line_number && fgets(buffer, max_count, opened_file) != NULL)
+	{
+		current_line++;
+	}
+
+	// If the desired line number is found, the buffer will contain the line
+	// Otherwise, buffer will be empty
 }

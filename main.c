@@ -96,7 +96,7 @@ inline void load_settings(void)
 
 inline void check_profiles_file(void)
 {
-	wchar_t* appdata_roaming_path = get_roaming_folder_path();
+	wchar_t* appdata_roaming_path = get_roaming_folder_path_wstr();
 
 	if (appdata_roaming_path == NULL)
 		error_exit();
@@ -117,7 +117,10 @@ inline void check_profiles_file(void)
 		_wfopen_s(&fp, profiles_path, L"w");
 		
 		if (fp == NULL)
+		{
+			fclose(fp);
 			error_exit();
+		}
 		else
 			fclose(fp);
 
