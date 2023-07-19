@@ -667,6 +667,10 @@ LRESULT CALLBACK textbox_wnd_proc(HWND window_handle, UINT message, WPARAM wpara
 				{
 					save_button_click(NULL, cur_program_page.handle);
 				}
+				else if (ctrl_id == IDC_WELCOME_PASSWORD)
+				{
+					welcome_create_button_click(NULL, cur_program_page.handle);
+				}
 				else
 				{
 					HWND currentFocus = GetFocus();
