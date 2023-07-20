@@ -36,7 +36,7 @@ int WINAPI WinMain(_In_ HINSTANCE hinstance, _In_opt_ HINSTANCE hprevinstance, _
 
 	MSG message = { 0 };
 
-	while (GetMessageW(&message, gMainWindow->handle, 0, 0) > 0)
+	while (GetMessageW(&message, NULL, 0, 0) > 0)
 	{
 		TranslateMessage(&message);
 		DispatchMessageW(&message);

@@ -20,7 +20,13 @@ void read_profiles_from_file(_In_ const wchar_t* file_path);
 // Appends a profile to the profiles file
 BOOL append_profile_to_file(_In_ const wchar_t* file_path, _In_ Profile* profile, _In_ BOOL is_default);
 
+// Appends a password entry to the specified file
+BOOL append_password_entry_to_file(_In_ const char* file_path, _In_ PasswordEntry* entry);
+
 // Reads the specified line to the specified buffer
 void read_line_from_file(_In_ FILE* opened_file, _In_ char* buffer, _In_ int max_count, _In_ int line_number);
+
+// Saves a password entry to a profile
+void save_password_entry_to_profile(_In_ PasswordEntry* entry, _In_ Profile* profile);
 
 #endif

@@ -245,6 +245,9 @@ static inline void page_on_command(_In_ HWND page_handle, _In_ WPARAM wparam, _I
 		case IDC_BUTTON_GENERATE:
 			generate_button_click(ctrl_handle, page_handle);
 			break;
+		case IDC_COMBO2:
+			combo_box_select(ctrl_handle, page_handle);
+			break;
 	}
 }
 
@@ -848,6 +851,18 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 		case UICT_SLIDER:
 		{
 			SendMessageW(ui_handle, TBM_SETRANGE, TRUE, MAKELPARAM(4, 30));
+			break;
+		}
+		case UICT_COMBOBOX:
+		{
+			for (int i = 0; i < gProfiles->num_profiles; i++)
+			{
+				SendMessageW(ui_handle, CB_ADDSTRING, 0, (LPARAM)gProfiles->profiles[i]->name);
+			}
+
+			// Set cursel to default profile
+			SendMessageW(ui_handle, CB_SETCURSEL, (WPARAM)gProfiles->default_profile_index, 0);
+
 			break;
 		}
 		default:

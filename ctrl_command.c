@@ -155,7 +155,18 @@ void login_button_click(_In_ HWND button_handle, _In_ HWND parent_handle)
 	HWND textbox_handle = GetDlgItem(parent_handle, IDC_EDIT1);
 
 	// Copy the password the user typed to the global master_password string
-	//SendMessage(textbox_handle, WM_GETTEXT, sizeof(wchar_t) * 30, (LPARAM)master_password);
+	char password_text[31];
+	SendMessageA(textbox_handle, WM_GETTEXT, sizeof(wchar_t) * 30, (LPARAM)password_text);
+
+	// Encrypt and compare the encrypted password to the profiles encrypted password
+	char encrypted_password[31];
+	encrypt_str(password_text, app_encrypt_decrypt_password, encrypted_password);
+
+	if (!STR_EQUALS(encrypted_password, gProfiles->profiles[gProfiles->current_profile]->encrypted_password))
+	{
+		messageboxf(MB_OK | MB_ICONWARNING, L"Fehler!", L"Das eingegebene Passwort stimmt nicht mit dem Passwort des Profils überein!");
+		return;
+	}
 
 	// Unload the previous page
 	unload_current_page();
@@ -225,4 +236,14 @@ void generate_button_click(_In_ HWND button_handle, _In_ HWND parent_handle)
 	generate_password(buffer, length, gSettings->config);
 
 	SetWindowTextW(password_box_handle, buffer);
+}
+
+void combo_box_select(_In_ HWND combo_handle, _In_ HWND parent_handle)
+{
+	gProfiles->current_profile = SendMessageW(combo_handle, CB_GETCURSEL, 0, 0);
+
+	if (gProfiles->current_profile == -1)
+	{
+		// TODO: Handle error
+	}
 }

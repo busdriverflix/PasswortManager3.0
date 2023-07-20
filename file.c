@@ -127,6 +127,8 @@ void read_profiles_from_file(_In_ const wchar_t* file_path)
 		}
 	}
 
+	gProfiles->current_profile = gProfiles->current_profile;
+
 	// Cleanup
 	fclose(fp);
 }
@@ -143,11 +145,31 @@ BOOL append_profile_to_file(_In_ const wchar_t* file_path, _In_ Profile* profile
 	if (fp == NULL)
 		return FALSE;
 
+	fseek(fp, 0, SEEK_END);
+
 	fwprintf_s(fp, L"Profile:Name:'%s',PW:'%hs',Default:%d;", profile->name, profile->encrypted_password, is_default);
 
 	fclose(fp);
 
 	return TRUE;
+}
+
+BOOL append_password_entry_to_file(_In_ const char* file_path, _In_ PasswordEntry* entry)
+{
+	FILE* fp = NULL;
+
+	fopen_s(&fp, file_path, "a");
+
+	if (fp == NULL)
+	{
+		return FALSE;
+	}
+
+	fseek(fp, 0, SEEK_END);
+
+	fprintf_s(fp, "%s\n%s\n%s\n%s", entry->encrypted_name, entry->encrypted_user_name, entry->encrypted_email, entry->encrypted_password);
+
+	fclose(fp);
 }
 
 void save_passwords_from_profile(_In_ Profile* profile)
@@ -239,4 +261,19 @@ void read_line_from_file(_In_ FILE* opened_file, _In_ char* buffer, _In_ int max
 
 	// If the desired line number is found, the buffer will contain the line
 	// Otherwise, buffer will be empty
+}
+
+void save_password_entry_to_profile(_In_ PasswordEntry* entry, _In_ Profile* profile)
+{
+	if (profile->passwords == NULL)
+	{
+		profile->passwords = HEAP_ALLOCZ(sizeof(PasswordEntry));
+		profile->passwords[0] = *entry;
+		profile->num_passwords = 1;
+	}
+	else
+	{
+		profile->passwords = HEAP_REALLOC(profile->passwords, (++profile->num_passwords) * sizeof(PasswordEntry));
+		profile->passwords[profile->num_passwords - 1] = *entry;
+	}
 }
