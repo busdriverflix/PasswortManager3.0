@@ -6,8 +6,10 @@
 #define IDD_PAGE_2                      106
 #define IDD_PAGE_3                      108
 #define IDD_PAGE_0                      110
+#define IDD_PAGE_EDIT_PASSWORDS         114
 #define IDC_BUTTON1                     1003
 #define IDC_EDIT1                       1004
+#define IDC_EDIT_SAVE_BUTTON            1004
 #define IDC_BUTTON_EDIT                 1005
 #define IDC_WELCOME_PASSWORD            1005
 #define IDC_CHECK1                      1006
@@ -38,14 +40,19 @@
 #define IDC_WELCOME_CHECK_PASSWORD_VISIBILITY 1029
 #define IDC_WELCOME_CREATE              1030
 #define IDC_COMBO2                      1034
+#define IDC_COMBO_PASSWORDS             1035
+#define IDC_EDIT_PROFILES_BUTTON        1036
+#define IDC_EDIT_PROFILES_CAPTION       1037
+#define IDC_EDIT_CANCEL_BUTTON          1039
+#define IDC_PROFILE_LABEL               1040
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        114
+#define _APS_NEXT_RESOURCE_VALUE        116
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1035
+#define _APS_NEXT_CONTROL_VALUE         1041
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -247,3 +247,12 @@ void combo_box_select(_In_ HWND combo_handle, _In_ HWND parent_handle)
 		// TODO: Handle error
 	}
 }
+
+void edit_profiles_button_click(_In_ HWND button_handle, _In_ HWND parent_handle)
+{
+	unload_current_page();
+
+	switch_window_position_and_style(WND_POS_TYPE_RESIZE);
+
+	load_page(IDD_PAGE_EDIT_PASSWORDS);
+}

@@ -248,6 +248,9 @@ static inline void page_on_command(_In_ HWND page_handle, _In_ WPARAM wparam, _I
 		case IDC_COMBO2:
 			combo_box_select(ctrl_handle, page_handle);
 			break;
+		case IDC_EDIT_PROFILES_BUTTON:
+			edit_profiles_button_click(ctrl_handle, page_handle);
+			break;
 	}
 }
 
@@ -476,7 +479,7 @@ static inline void page_draw_items(_In_ HWND page_handle, _In_ LPDRAWITEMSTRUCT 
 		}
 		case UICT_LABEL:
 		{
-			if (lpDrawItemStruct->CtlID == IDC_NEW_CAPTION || lpDrawItemStruct->CtlID == IDC_WELCOME_CAPTION)
+			if (lpDrawItemStruct->CtlID == IDC_NEW_CAPTION || lpDrawItemStruct->CtlID == IDC_WELCOME_CAPTION || lpDrawItemStruct->CtlID == IDC_EDIT_PROFILES_CAPTION || lpDrawItemStruct->CtlID == IDC_PASSWORDS_CAPTION || lpDrawItemStruct->CtlID == IDC_PROFILE_LABEL)
 				page_draw_caption(lpDrawItemStruct);
 			else
 				page_draw_label(lpDrawItemStruct);
@@ -796,10 +799,10 @@ BOOL CALLBACK page_enum_child_proc(HWND ui_handle, LPARAM lparam)
 					set_window_style(ui_handle, (WS_CHILD | WS_VISIBLE | SS_OWNERDRAW));
 				}
 			}
-			else if (ctrl->cmd_id == IDC_PASSWORDS_CAPTION || ctrl->cmd_id == IDC_WELCOME_CAPTION || cur_program_page.id == IDD_PAGE_0)
+			else if (ctrl->cmd_id == IDC_PASSWORDS_CAPTION || ctrl->cmd_id == IDC_WELCOME_CAPTION || ctrl->cmd_id == IDC_EDIT_PROFILES_CAPTION || ctrl->cmd_id == IDC_PROFILE_LABEL || cur_program_page.id == IDD_PAGE_0)
 			{
 				set_window_style(ui_handle, (WS_CHILD | WS_VISIBLE | SS_OWNERDRAW));
-			}				
+			}			
 
 			size = (int)(((float)ui_height / 3.0f) * 2.5f);
 			break;
